@@ -3,7 +3,6 @@ package bitcask
 import (
 	"bitcask/helper"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -109,6 +108,7 @@ type (
 	BucketMetasIdx map[string]*BucketMeta
 )
 
+// Open 根据  option.Options 开启一个 DB
 func Open(opt Options) (*DB, error) {
 	db := &DB{
 		opt:                  opt,
@@ -125,6 +125,14 @@ func Open(opt Options) (*DB, error) {
 			return nil, err
 		}
 	}
+	if opt.EntryIdxMode == HintBPTSparseIdxMode {
+		bucketMetaDir := db.opt.Dir + "/meta/bucket"
+		if ok := helper.PathIsExist(bucketMetaDir); !ok {
+			if err := os.MkdirAll(bucketMetaDir, os.ModePerm); err != nil {
+				return nil, err
+			}
+		}
+	}
 
 	if err := db.buildIndexes(); err != nil {
 		return nil, fmt.Errorf("db.buildIndexes error: %s", err)
@@ -133,18 +141,20 @@ func Open(opt Options) (*DB, error) {
 	return db, nil
 }
 
-// 初始化db 根据 minidb 每种索引都应该是包含了 两步骤: 1.加载数据文件,2.加载索引
+// buildIndexes 初始化db 根据 minidb 每种索引都应该是包含了 两步骤: 1.加载数据文件,2.加载索引
 func (db *DB) buildIndexes() (err error) {
 	//从文件中获取活动文件id,以及获取数据文件列表
 	maxFileID, dataFileIds := db.getMaxFileIDAndFileIDs()
-	db.MaxFileID = maxFileID //设置最大的文件id,这个应该就是ActiveFile
+	//设置最大的文件id,这个就是ActiveFile,活动文件
+	db.MaxFileID = maxFileID
+
 	//初始化并设置活动文件
-	if err = db.setActiveFile(); err != nil {
+	//根据当前最大的文件Id 获取文件名,并创建数据文件 对象
+	if db.ActiveFile, err = NewDataFile(db.opt.Dir, db.MaxFileID, db.opt.SegmentSize, db.opt.RWMode); err != nil {
 		return
 	}
-
 	//获取活动文件写偏移量,并且设置文件的物理大小
-	if db.ActiveFile.writeOff, err = db.getActiveFileWriteOff(); err != nil {
+	if err = db.ActiveFile.setActiveFileWriteOff(); err != nil {
 		return
 	}
 	//如果开启了 b+树稀疏索引模式  则 构建b+ 树稀疏索引
@@ -156,7 +166,7 @@ func (db *DB) buildIndexes() (err error) {
 	return db.buildHintIdx(dataFileIds)
 }
 
-// 查找文件夹下面最大的文件id和文件id列表
+// getMaxFileIDAndFileIDs 查找文件夹下面最大的文件id和文件id列表
 func (db *DB) getMaxFileIDAndFileIDs() (int64, []int) {
 	var (
 		dataFileIds []int
@@ -189,51 +199,37 @@ func (db *DB) getMaxFileIDAndFileIDs() (int64, []int) {
 	return int64(maxFileID), dataFileIds
 }
 
-// 设置活动文件(数据文件对象)
-func (db *DB) setActiveFile() (err error) {
-	//获取文件名
-	filepath := db.getDataPath(db.MaxFileID)
-	//创建活动文件
-	db.ActiveFile, err = NewDataFile(filepath, db.opt.SegmentSize, db.opt.RWMode)
-	if err != nil {
-		return
+// getMaxFileIDAndFileIDs2 查找文件夹下面最大的文件id和文件id列表，第二种实现方法
+func (db *DB) getMaxFileIDAndFileIDs2() (int64, []int) {
+	var (
+		dataFileIds []int
+		maxFileID   int64
+	)
+	files, _ := ioutil.ReadDir(db.opt.Dir)
+	if len(files) == 0 {
+		return 0, nil
 	}
-	db.ActiveFile.fileID = db.MaxFileID
-
-	return nil
-
-}
-
-// 根据文件id 拼接得到数据文件路径
-func (db *DB) getDataPath(fID int64) string {
-	return db.opt.Dir + "/" + helper.Int64ToStr(fID) + DataSuffix
-}
-
-// 对应 minidb.db.loadIndexesFromFile 1.从文件中加载索引 2.获取 活动文件的实际文件大小和写入偏移量,
-func (db *DB) getActiveFileWriteOff() (off int64, err error) {
-	off = 0
-	for {
-		if entry, err := db.ActiveFile.ReadEntryAt(int(off)); err == nil {
-			if entry == nil {
-				break
-			}
-
-			off += entry.Size()
-			//todo: minidb 在这里建立了索引, nustdbDB 需要遍历每一个datafile ,然后读取解析entry,设置到BPTreeKeyEntryPosMap中
-
-			//set ActiveFileActualSize
-			db.ActiveFile.ActualSize = off
-
-		} else {
-			if err == io.EOF {
-				break
-			}
-
-			return -1, fmt.Errorf("when build activeDataIndex readAt err: %s", err)
+	maxFileID = 0
+	//循环每天一个
+	for _, f := range files {
+		name := f.Name()
+		// 判断文件名扩展名是不是数据文件,获取,路径的最后一个元素,然后分割.
+		ext := path.Ext(path.Base(name))
+		if ext != DataSuffix {
+			continue
 		}
+		//如果扩展就是数据,那么文件名中包含id
+		id := strings.TrimSuffix(name, DataSuffix)
+		idVal, _ := helper.StrToInt(id) //将id转为int
+		dataFileIds = append(dataFileIds, idVal)
 	}
+	if len(dataFileIds) == 0 {
+		return 0, nil
+	}
+	sort.Ints(dataFileIds)
+	maxFileID = int64(dataFileIds[len(dataFileIds)-1])
 
-	return
+	return maxFileID, dataFileIds
 }
 
 // 创建 B+ 树稀疏索引模式
@@ -289,18 +285,15 @@ func (db *DB) buildHintIdx(dataFileIds []int) (err error) {
 		unconfirmedRecords []*Record
 	)
 	// 根据数据文件 构建  db.BPTreeKeyEntryPosMap,这将能够建立一个map,value 是我们的文件中 entry的 pos
-	unconfirmedRecords, db.committedTxIds, err = db.parseDataFiles(dataFileIds)
-	if err != nil {
+	// 如果解析失败或者是收集的记录数目为0，那么就返回
+	if unconfirmedRecords, db.committedTxIds, err = db.parseDataFiles(dataFileIds); err != nil || len(unconfirmedRecords) == 0 {
 		return err
 	}
-
-	if len(unconfirmedRecords) == 0 {
-		return nil
-	}
-
 	//循环每一个未确认的记录
 	for _, record := range unconfirmedRecords {
-		//如果记录的 entry 是提交了的 (entry.Meta.Status == Committed) 或者 其 hint 源数据中的事务id(record.H.Meta.TxID) == entry.Meta.TxID
+		//如果记录的 entry 是提交了的 (entry.Meta.Status == Committed)
+		//或者 其 hint 源数据中的事务id(record.H.Meta.TxID) == entry.Meta.TxID
+
 		if _, ok := db.committedTxIds[record.H.Meta.TxID]; ok {
 			//获取 bucket
 			bucket := string(record.H.Meta.Bucket)
@@ -342,29 +335,34 @@ func (db *DB) buildHintIdx(dataFileIds []int) (err error) {
 	return nil
 }
 
+// parseDataFiles 读取解析数据文件
 func (db *DB) parseDataFiles(dataFileIds []int) (unconfirmedRecords []*Record, committedTxIds map[uint64]struct{}, err error) {
 	var (
-		fUnconfirmedRecords []*Record
+		dataUnconfirmedRecords []*Record
 	)
-	committedTxIds = make(map[uint64]struct{})
-
-	// 如果是稀疏索引模式,则 只用解析最后一个数据文件
+	// 如果是稀疏索引模式,则 只用解析最后一个数据文件,即 fileId 最大的那个文件
 	if db.opt.EntryIdxMode == HintBPTSparseIdxMode {
 		sort.Ints(dataFileIds)
 		dataFileIds = dataFileIds[len(dataFileIds)-1:]
 	}
-	//循环每一个数据文件,
+	//循环每一个数据文件,然后解析通过数据文件解析数据，构建索引，收集记录的数据
 	for _, dataID := range dataFileIds {
-		fID := int64(dataID)
-		f, err := NewDataFile(db.getDataPath(fID), db.opt.SegmentSize, db.opt.StartFileLoadingMode)
+		// 获取DataFile 结构体
+		// 设置Truncate 数据文件大小 为 SegmentSize
+		// 设置 数据文件的 读写模型为 StartFileLoadingMode
+		f, err := NewDataFile(db.opt.Dir, int64(dataID), db.opt.SegmentSize, db.opt.StartFileLoadingMode)
 		if err != nil {
 			return nil, nil, err
 		}
-		fUnconfirmedRecords, err = f.ParseData(fID, 0, db.opt.EntryIdxMode, db.BPTreeKeyEntryPosMap, committedTxIds)
+		// 解析对应dataID的数据
+		// EntryIdxMode entry 的索引模式设置
+		// BPTreeKeyEntryPosMap bpt 偏移mapping
+		// committedTxIds 事务提交mapping
+		dataUnconfirmedRecords, err = f.ParseData(int64(dataID), 0, db.opt.EntryIdxMode, db.BPTreeKeyEntryPosMap, committedTxIds, db.opt.SegmentSize)
 		if err != nil {
 			return nil, nil, fmt.Errorf("when build hintIndex readAt err: %s", err)
 		}
-		unconfirmedRecords = append(unconfirmedRecords, fUnconfirmedRecords...)
+		unconfirmedRecords = append(unconfirmedRecords, dataUnconfirmedRecords...)
 	}
 	return
 }

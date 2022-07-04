@@ -23,6 +23,7 @@ const (
 
 var (
 	// DataEntryHeaderSize returns the entry header size
+	// 数据头的定长部分
 	DataEntryHeaderSize = 42
 
 	// BucketMetaHeaderSize BucketMeta header size
@@ -51,6 +52,7 @@ type (
 	}
 
 	// MetaData represents the meta information of the data item.
+	//表示数据项的元信息。
 	MetaData struct {
 		KeySize    uint32
 		ValueSize  uint32
@@ -81,7 +83,8 @@ type (
 
 /*Entry*/
 
-//检查 entry 是否为0,TODO:这里是否能有一个字段判断即可
+//IsZero 检查 entry 是否为0
+//这里是否能有一个字段判断即可
 func (e *Entry) IsZero() bool {
 	if e.crc == 0 && e.Meta.KeySize == 0 && e.Meta.ValueSize == 0 && e.Meta.Timestamp == 0 {
 		return true
@@ -89,7 +92,8 @@ func (e *Entry) IsZero() bool {
 	return false
 }
 
-//returns the crc at given buf slice. 返回给定buf片的CRC。
+//GetCrc returns the crc at given buf slice.
+//返回给定buf片的CRC。
 func (e *Entry) GetCrc(buf []byte) uint32 {
 	crc := crc32.ChecksumIEEE(buf[4:])
 	crc = crc32.Update(crc, crc32.IEEETable, e.Meta.Bucket)
@@ -99,14 +103,14 @@ func (e *Entry) GetCrc(buf []byte) uint32 {
 	return crc
 }
 
-//entry 的数据大小
+//Size entry 的数据大小
 func (e *Entry) Size() int64 {
 	return int64(uint32(DataEntryHeaderSize) + e.Meta.KeySize + e.Meta.ValueSize + e.Meta.BucketSize)
 }
 
-//定长部分会进行crc校验
-// crc, timestamp,key_size,value_size,flag,ttl,bucket_size,status,data_structure,tx_id
 // MetaDataDecode 根据buffer 构建 metadata 元数据结构
+// 定长部分会进行crc校验
+// crc, timestamp,key_size,value_size,flag,ttl,bucket_size,status,data_structure,tx_id
 func MetaDataDecode(buf []byte) *MetaData {
 	return &MetaData{
 		Timestamp:  binary.LittleEndian.Uint64(buf[4:12]),
@@ -123,7 +127,7 @@ func MetaDataDecode(buf []byte) *MetaData {
 
 /*BucketMeta*/
 
-// crc32 数据校验
+// GetCrc crc32 数据校验
 func (bm *BucketMeta) GetCrc(buf []byte) uint32 {
 	crc := crc32.ChecksumIEEE(buf[4:])
 	crc = crc32.Update(crc, crc32.IEEETable, bm.start)
@@ -132,7 +136,7 @@ func (bm *BucketMeta) GetCrc(buf []byte) uint32 {
 	return crc
 }
 
-// bucketMeta 解码
+// ReadBucketMetaFromPath bucketMeta 解码
 func ReadBucketMetaFromPath(path string) (bucketMeta *BucketMeta, err error) {
 
 	//open File
