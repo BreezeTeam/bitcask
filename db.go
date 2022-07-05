@@ -2,8 +2,11 @@ package bitcask
 
 import (
 	"bitcask/helper"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"sort"
@@ -13,20 +16,33 @@ import (
 
 // 这里就是 value 其数据结构 类型的 flag
 const (
-	// DataStructureSet represents the data structure set flag
-	DataStructureSet uint16 = iota
-
-	// DataStructureSortedSet represents the data structure sorted set flag
-	DataStructureSortedSet
-
 	// DataStructureBPTree represents the data structure b+ tree flag
-	DataStructureBPTree
-
-	// DataStructureList represents the data structure list flag
-	DataStructureList
+	// 表示数据结构b+树标志
+	DataStructureBPTree uint16 = iota
 
 	// DataStructureNone represents not the data structure
+	// 不表示数据结构
 	DataStructureNone
+)
+
+var (
+	// ErrDBClosed is returned when db is closed.
+	ErrDBClosed = errors.New("db is closed")
+
+	// ErrBucket is returned when bucket is not in the HintIdx.
+	ErrBucket = errors.New("err bucket")
+
+	// ErrEntryIdxModeOpt is returned when set db EntryIdxMode option is wrong.
+	ErrEntryIdxModeOpt = errors.New("err EntryIdxMode option set")
+
+	// ErrFn is returned when fn is nil.
+	ErrFn = errors.New("err fn")
+
+	// ErrBucketNotFound is returned when looking for bucket that does not exist
+	ErrBucketNotFound = errors.New("bucket not found")
+
+	// ErrNotSupportHintBPTSparseIdxMode is returned not support mode `HintBPTSparseIdxMode`
+	ErrNotSupportHintBPTSparseIdxMode = errors.New("not support mode `HintBPTSparseIdxMode`")
 )
 
 const (
@@ -88,17 +104,20 @@ const (
 //DB
 type (
 	DB struct {
-		opt                  Options          // the database options
-		BPTreeIdx            BPTreeIdx        // Hint Index
-		BPTreeKeyEntryPosMap map[string]int64 // key = bucket+key  val = EntryPos
-		committedTxIds       map[uint64]struct{}
-		MaxFileID            int64     //活动文件id
-		ActiveFile           *DataFile //活动文件对象
-		mu                   sync.RWMutex
-		KeyCount             int // total key number ,include expired, deleted, repeated.
-		closed               bool
-		isMerging            bool
-		bucketMetas          BucketMetasIdx // BucketMeta 索引
+		opt                     Options   // the database options
+		BPTreeIdx               BPTreeIdx // Hint Index
+		BPTreeRootIdxes         []*BPTreeRootIdx
+		ActiveBPTreeIdx         *BPTree
+		ActiveCommittedTxIdsIdx *BPTree
+		BPTreeKeyEntryPosMap    map[string]int64 // key = bucket+key  val = EntryPos
+		committedTxIds          map[uint64]struct{}
+		MaxFileID               int64     //活动文件id
+		ActiveFile              *DataFile //活动文件对象
+		mu                      sync.RWMutex
+		KeyCount                int // total key number ,include expired, deleted, repeated.
+		closed                  bool
+		isMerging               bool
+		bucketMetas             BucketMetasIdx // BucketMeta 索引
 	}
 
 	// BPTreeIdx B+ tree 索引
@@ -125,6 +144,7 @@ func Open(opt Options) (*DB, error) {
 			return nil, err
 		}
 	}
+	//创建需要的文件夹
 	if opt.EntryIdxMode == HintBPTSparseIdxMode {
 		bucketMetaDir := db.opt.Dir + "/meta/bucket"
 		if ok := helper.PathIsExist(bucketMetaDir); !ok {
@@ -133,7 +153,7 @@ func Open(opt Options) (*DB, error) {
 			}
 		}
 	}
-
+	// 构建索引
 	if err := db.buildIndexes(); err != nil {
 		return nil, fmt.Errorf("db.buildIndexes error: %s", err)
 	}
@@ -151,6 +171,10 @@ func (db *DB) buildIndexes() (err error) {
 	//初始化并设置活动文件
 	//根据当前最大的文件Id 获取文件名,并创建数据文件 对象
 	if db.ActiveFile, err = NewDataFile(db.opt.Dir, db.MaxFileID, db.opt.SegmentSize, db.opt.RWMode); err != nil {
+		return
+	}
+	// 如果没有数据文件，那么就直接退出
+	if dataFileIds == nil && maxFileID == 0 {
 		return
 	}
 	//获取活动文件写偏移量,并且设置文件的物理大小
@@ -298,11 +322,11 @@ func (db *DB) buildHintIdx(dataFileIds []int) (err error) {
 			//获取 bucket
 			bucket := string(record.H.Meta.Bucket)
 
-			//会将一部分记录中没有可能没有提交的数据进行修正
+			// 如果 是 BPT数据结构
 			if record.H.Meta.Ds == DataStructureBPTree {
 				record.H.Meta.Status = Committed
-
 				// TODO: 当数据为 BPTree 且 EntryIdxMode 为 HintBPTSparseIdxMode 时，需要使用BPTree 进行构建
+				// 如果 是稀疏索引模式，那么 就构建
 				if db.opt.EntryIdxMode == HintBPTSparseIdxMode {
 					if err = db.buildActiveBPTreeIdx(record); err != nil {
 						return err
@@ -313,24 +337,67 @@ func (db *DB) buildHintIdx(dataFileIds []int) (err error) {
 					}
 				}
 			}
-			// TODO: 构建 Set，SortedSet,List
-			if err = db.buildOtherIdxes(bucket, record); err != nil {
-				return err
-			}
-			// TODO：根据bucket 从对应的数据结构索引中删除数据
+			// 如果 Ds 标识此处没有数据，那么就从bucket 中删除记录
 			if record.H.Meta.Ds == DataStructureNone {
 				db.buildNotDSIdxes(bucket, record)
 			}
-
 			db.KeyCount++
 		}
 	}
-	//TODO： buildBPTreeRootIdxes
-	//if HintBPTSparseIdxMode == db.opt.EntryIdxMode {
-	//	if err = db.buildBPTreeRootIdxes(dataFileIds); err != nil {
-	//		return err
-	//	}
-	//}
+	if HintBPTSparseIdxMode == db.opt.EntryIdxMode {
+		if err = db.buildBPTreeRootIdxes(dataFileIds); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+const bptDir = "bpt"
+
+func (db *DB) getBPTDir() string {
+	return db.opt.Dir + "/" + bptDir
+}
+func (db *DB) getBPTRootPath(fID int64) string {
+	return db.getBPTDir() + "/root/" + helper.Int64ToStr(fID) + BPTRootIndexSuffix
+}
+func (db *DB) buildBPTreeRootIdxes(dataFileIds []int) error {
+	var off int64
+
+	dataFileIdsSize := len(dataFileIds)
+
+	if dataFileIdsSize == 1 {
+		return nil
+	}
+
+	for i := 0; i < len(dataFileIds[0:dataFileIdsSize-1]); i++ {
+		off = 0
+		path := db.getBPTRootPath(int64(dataFileIds[i]))
+		fd, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0644)
+		if err != nil {
+			return err
+		}
+
+		for {
+			bs, err := ReadBPTreeRootIdxAt(fd, off)
+			if err == io.EOF || err == nil && bs == nil {
+				break
+			}
+			if err != nil {
+				return err
+			}
+
+			if err == nil && bs != nil {
+				db.BPTreeRootIdxes = append(db.BPTreeRootIdxes, bs)
+				off += bs.Size()
+			}
+
+		}
+
+		fd.Close()
+	}
+
+	db.committedTxIds = nil
 
 	return nil
 }
@@ -371,6 +438,7 @@ func (db *DB) parseDataFiles(dataFileIds []int) (unconfirmedRecords []*Record, c
 func (db *DB) buildActiveBPTreeIdx(r *Record) error {
 	Key := r.H.Meta.Bucket
 	Key = append(Key, r.H.Key...)
+	log.Fatal("buildActiveBPTreeIdx failed")
 	// BPTree Insert TODO
 	//if err := db.ActiveBPTreeIdx.Insert(Key, r.E, r.H, CountFlagEnabled); err != nil {
 	//	return fmt.Errorf("when build BPTreeIdx insert index err: %s", err)
@@ -384,6 +452,7 @@ func (db *DB) buildBPTreeIdx(bucket string, r *Record) error {
 		db.BPTreeIdx[bucket] = NewTree()
 	}
 
+	log.Fatal("buildBPTreeIdx failed")
 	// BPTree Insert TODO
 	//if err := db.BPTreeIdx[bucket].Insert(r.H.Key, r.E, r.H, CountFlagEnabled); err != nil {
 	//	return fmt.Errorf("when build BPTreeIdx insert index err: %s", err)
@@ -414,36 +483,63 @@ func (db *DB) buildOtherIdxes(bucket string, r *Record) error {
 	return nil
 }
 
-// 当标识此处没有数据时，会根据 Record.H.Meta.Flag 来对对应的数据进行删除
+// buildNotDSIdxes 当标识此处没有数据时
+//会根据 Record.H.Meta.Flag 来对对应的数据索引进行相关删除
 func (db *DB) buildNotDSIdxes(bucket string, r *Record) {
-	if r.H.Meta.Flag == DataSetBucketDeleteFlag {
-		db.deleteBucket(DataStructureSet, bucket)
-	}
-	if r.H.Meta.Flag == DataSortedSetBucketDeleteFlag {
-		db.deleteBucket(DataStructureSortedSet, bucket)
-	}
 	if r.H.Meta.Flag == DataBPTreeBucketDeleteFlag {
 		db.deleteBucket(DataStructureBPTree, bucket)
-	}
-	if r.H.Meta.Flag == DataListBucketDeleteFlag {
-		db.deleteBucket(DataStructureList, bucket)
 	}
 	return
 }
 
-// 根据
+// deleteBucket 根据ds从对应的索引中删除bucket
 func (db *DB) deleteBucket(ds uint16, bucket string) {
-	//if ds == DataStructureSet {
-	//	delete(db.SetIdx, bucket)
-	//}
-	//if ds == DataStructureSortedSet {
-	//	delete(db.SortedSetIdx, bucket)
-	//}
-	//if ds == DataStructureBPTree {
-	//	delete(db.BPTreeIdx, bucket)
-	//}
-	//if ds == DataStructureList {
-	//	delete(db.ListIdx, bucket)
-	//}
+	if ds == DataStructureBPTree {
+		delete(db.BPTreeIdx, bucket)
+	}
 	return
+}
+
+// managed calls a block of code that is fully contained in a transaction.
+func (db *DB) managed(writable bool, fn func(tx *Tx) error) error {
+	var tx *Tx
+
+	tx, err := db.Begin(writable)
+	if err != nil {
+		return err
+	}
+
+	if err = fn(tx); err != nil {
+		if errRollback := tx.Rollback(); errRollback != nil {
+			return errRollback
+		}
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		if errRollback := tx.Rollback(); errRollback != nil {
+			return errRollback
+		}
+		return err
+	}
+
+	return nil
+}
+
+// Update executes a function within a managed read/write transaction.
+func (db *DB) Update(fn func(tx *Tx) error) error {
+	if fn == nil {
+		return ErrFn
+	}
+
+	return db.managed(true, fn)
+}
+
+// View executes a function within a managed read-only transaction.
+func (db *DB) View(fn func(tx *Tx) error) error {
+	if fn == nil {
+		return ErrFn
+	}
+
+	return db.managed(false, fn)
 }
