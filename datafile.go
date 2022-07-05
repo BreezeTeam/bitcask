@@ -69,6 +69,19 @@ func NewDataFile(dir string, fileID int64, capacity int64, rwMode rwmanager.RWMo
 	}, nil
 }
 
+// WriteAt copies data to mapped region from the b slice starting at
+// given off and returns number of bytes copied to the mapped region.
+func (df *DataFile) WriteAt(b []byte, off int64) (n int, err error) {
+	return df.rwManager.WriteAt(b, off)
+}
+
+// Sync commits the current contents of the file to stable storage.
+// Typically, this means flushing the file system's in-memory copy
+// of recently written data to disk.
+func (df *DataFile) Sync() (err error) {
+	return df.rwManager.Sync()
+}
+
 // getDataFilePath 根据文件id 拼接得到数据文件路径
 func getDataFilePath(dir string, fileID int64) string {
 	return dir + "/" + helper.Int64ToStr(fileID) + DataSuffix

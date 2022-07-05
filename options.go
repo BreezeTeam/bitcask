@@ -22,6 +22,10 @@ type Options struct {
 	RWMode               rwmanager.RWMode // RWManager 接口实现方式选择 有 标准io和 mmap 两种
 	EntryIdxMode         EntryIdxMode     // 条目索引模式。
 	StartFileLoadingMode rwmanager.RWMode // 打开一个数据库，加载文件 时的 RWMode
+	// SyncEnable represents if call Sync() function.
+	// if SyncEnable is false, high write performance but potential data loss likely.
+	// if SyncEnable is true, slower but persistent.
+	SyncEnable bool
 }
 
 // defaultSegmentSize 8 mb 的默认写入大小

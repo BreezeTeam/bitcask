@@ -24,10 +24,10 @@ const (
 var (
 	// DataEntryHeaderSize returns the entry header size
 	// 数据头的定长部分
-	DataEntryHeaderSize = 42
+	DataEntryHeaderSize uint32 = 42
 
 	// BucketMetaHeaderSize BucketMeta header size
-	BucketMetaHeaderSize = 12
+	BucketMetaHeaderSize uint32 = 12
 
 	// BucketMetaSuffix B +树索引后缀。
 	BucketMetaSuffix = ".meta"
@@ -81,6 +81,37 @@ type (
 	}
 )
 
+// Encode returns the slice after the BucketMeta be encoded.
+func (bm *BucketMeta) Encode() []byte {
+	buf := make([]byte, bm.Size())
+
+	binary.LittleEndian.PutUint32(buf[4:8], bm.startSize)
+	binary.LittleEndian.PutUint32(buf[8:12], bm.endSize)
+
+	startBuf := buf[BucketMetaHeaderSize:(BucketMetaHeaderSize + bm.startSize)]
+	copy(startBuf, bm.start)
+	endBuf := buf[BucketMetaHeaderSize+bm.startSize : (BucketMetaHeaderSize + bm.startSize + bm.endSize)]
+	copy(endBuf, bm.end)
+	c32 := crc32.ChecksumIEEE(buf[4:])
+	binary.LittleEndian.PutUint32(buf[0:4], c32)
+
+	return buf
+}
+
+// GetCrc returns the crc at given buf slice.
+func (bm *BucketMeta) GetCrc(buf []byte) uint32 {
+	crc := crc32.ChecksumIEEE(buf[4:])
+	crc = crc32.Update(crc, crc32.IEEETable, bm.start)
+	crc = crc32.Update(crc, crc32.IEEETable, bm.end)
+
+	return crc
+}
+
+// Size returns the size of the BucketMeta.
+func (bm *BucketMeta) Size() int64 {
+	return int64(BucketMetaHeaderSize + bm.startSize + bm.endSize)
+}
+
 /*Entry*/
 
 //IsZero 检查 entry 是否为0
@@ -108,6 +139,49 @@ func (e *Entry) Size() int64 {
 	return int64(uint32(DataEntryHeaderSize) + e.Meta.KeySize + e.Meta.ValueSize + e.Meta.BucketSize)
 }
 
+// Encode returns the slice after the entry be encoded.
+//
+//  the entry stored format:
+//  |----------------------------------------------------------------------------------------------------------------|
+//  |  crc  | timestamp | ksz | valueSize | flag  | TTL  |bucketSize| status | ds   | txId |  bucket |  key  | value |
+//  |----------------------------------------------------------------------------------------------------------------|
+//  | uint32| uint64  |uint32 |  uint32 | uint16  | uint32| uint32 | uint16 | uint16 |uint64 |[]byte|[]byte | []byte |
+//  |----------------------------------------------------------------------------------------------------------------|
+//
+func (e *Entry) Encode() []byte {
+	keySize := e.Meta.KeySize
+	valueSize := e.Meta.ValueSize
+	bucketSize := e.Meta.BucketSize
+
+	//set DataItemHeader buf
+	buf := make([]byte, e.Size())
+	buf = e.setEntryHeaderBuf(buf)
+	//set bucket\key\value
+	copy(buf[DataEntryHeaderSize:(bucketSize+DataEntryHeaderSize)], e.Meta.Bucket)
+	copy(buf[(DataEntryHeaderSize+bucketSize):(DataEntryHeaderSize+bucketSize+keySize)], e.Key)
+	copy(buf[(DataEntryHeaderSize+bucketSize+keySize):(DataEntryHeaderSize+bucketSize+keySize+valueSize)], e.Value)
+
+	c32 := crc32.ChecksumIEEE(buf[4:])
+	binary.LittleEndian.PutUint32(buf[0:4], c32)
+
+	return buf
+}
+
+// setEntryHeaderBuf sets the entry header buff.
+func (e *Entry) setEntryHeaderBuf(buf []byte) []byte {
+	binary.LittleEndian.PutUint64(buf[4:12], e.Meta.Timestamp)
+	binary.LittleEndian.PutUint32(buf[12:16], e.Meta.KeySize)
+	binary.LittleEndian.PutUint32(buf[16:20], e.Meta.ValueSize)
+	binary.LittleEndian.PutUint16(buf[20:22], e.Meta.Flag)
+	binary.LittleEndian.PutUint32(buf[22:26], e.Meta.TTL)
+	binary.LittleEndian.PutUint32(buf[26:30], e.Meta.BucketSize)
+	binary.LittleEndian.PutUint16(buf[30:32], e.Meta.Status)
+	binary.LittleEndian.PutUint16(buf[32:34], e.Meta.Ds)
+	binary.LittleEndian.PutUint64(buf[34:42], e.Meta.TxID)
+
+	return buf
+}
+
 // MetaDataDecode 根据buffer 构建 metadata 元数据结构
 // 定长部分会进行crc校验
 // crc, timestamp,key_size,value_size,flag,ttl,bucket_size,status,data_structure,tx_id
@@ -126,15 +200,6 @@ func MetaDataDecode(buf []byte) *MetaData {
 }
 
 /*BucketMeta*/
-
-// GetCrc crc32 数据校验
-func (bm *BucketMeta) GetCrc(buf []byte) uint32 {
-	crc := crc32.ChecksumIEEE(buf[4:])
-	crc = crc32.Update(crc, crc32.IEEETable, bm.start)
-	crc = crc32.Update(crc, crc32.IEEETable, bm.end)
-
-	return crc
-}
 
 // ReadBucketMetaFromPath bucketMeta 解码
 func ReadBucketMetaFromPath(path string) (bucketMeta *BucketMeta, err error) {
@@ -184,4 +249,12 @@ func ReadBucketMetaFromPath(path string) (bucketMeta *BucketMeta, err error) {
 	bucketMeta.end = endBuf
 
 	return
+}
+
+// UpdateRecord updates the record.
+func (r *Record) UpdateRecord(h *Hint, e *Entry) error {
+	r.E = e
+	r.H = h
+
+	return nil
 }
