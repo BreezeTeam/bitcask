@@ -26,10 +26,11 @@ type Options struct {
 	// if SyncEnable is false, high write performance but potential data loss likely.
 	// if SyncEnable is true, slower but persistent.
 	SyncEnable bool
+	NodeNum    int64
 }
 
 // defaultSegmentSize 8 mb 的默认写入大小
-var defaultSegmentSize int64 = 8 * 1024 * 1024
+var defaultSegmentSize int64 = 0.5 * 1024 * 1024
 
 // DefaultOptions represents the default options.
 var DefaultOptions = Options{

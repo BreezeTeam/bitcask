@@ -127,6 +127,17 @@ type (
 	BucketMetasIdx map[string]*BucketMeta
 )
 
+func (db *DB) getBPTTxIDPath(fID int64) string {
+	return db.getBPTDir() + "/txid/" + helper.Int64ToStr(fID) + BPTTxIDIndexSuffix
+}
+
+func (db *DB) getBPTRootTxIDPath(fID int64) string {
+	return db.getBPTDir() + "/txid/" + helper.Int64ToStr(fID) + BPTRootTxIDIndexSuffix
+}
+func (db *DB) getBPTPath(fID int64) string {
+	return db.getBPTDir() + "/" + helper.Int64ToStr(fID) + BPTIndexSuffix
+}
+
 // Open 根据  option.Options 开启一个 DB
 func Open(opt Options) (*DB, error) {
 	db := &DB{

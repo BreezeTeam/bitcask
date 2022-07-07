@@ -3,7 +3,6 @@ package bitcask
 import (
 	"bitcask/helper"
 	"errors"
-	"github.com/bwmarrin/snowflake"
 	"os"
 	"time"
 )
@@ -72,8 +71,6 @@ func (db *DB) Begin(writable bool) (tx *Tx, err error) {
 
 // newTx returns a newly initialized Tx object at given writable.
 func newTx(db *DB, writable bool) (tx *Tx, err error) {
-	var txID uint64
-
 	tx = &Tx{
 		db:                     db,
 		writable:               writable,
@@ -81,26 +78,14 @@ func newTx(db *DB, writable bool) (tx *Tx, err error) {
 		ReservedStoreTxIDIdxes: make(map[int64]*BPTree),
 	}
 
-	txID, err = tx.getTxID()
-	if err != nil {
-		return nil, err
-	}
-
-	tx.id = txID
+	tx.id = tx.getTxID()
 
 	return
 }
 
 // getTxID returns the tx id.
-func (tx *Tx) getTxID() (id uint64, err error) {
-	node, err := snowflake.NewNode(tx.db.opt.NodeNum)
-	if err != nil {
-		return 0, err
-	}
-
-	id = uint64(node.Generate().Int64())
-
-	return
+func (tx *Tx) getTxID() uint64 {
+	return SnowflakeID()
 }
 
 // Commit commits the transaction, following these steps:
@@ -290,7 +275,10 @@ func (tx *Tx) buildBucketMetaIdx(bucket string, key []byte, bucketMetaTemp Bucke
 func (tx *Tx) buildTxIDRootIdx(txID uint64, countFlag bool) error {
 	txIDStr := helper.IntToStr(int(txID))
 
-	tx.db.ActiveCommittedTxIdsIdx.Insert([]byte(txIDStr), nil, &Hint{Meta: &MetaData{Flag: DataSetFlag}}, countFlag)
+	err := tx.db.ActiveCommittedTxIdsIdx.Insert([]byte(txIDStr), nil, &Hint{Meta: &MetaData{Flag: DataSetFlag}}, countFlag)
+	if err != nil {
+		return err
+	}
 	if len(tx.ReservedStoreTxIDIdxes) > 0 {
 		for fID, txIDIdx := range tx.ReservedStoreTxIDIdxes {
 			filePath := tx.db.getBPTTxIDPath(fID)
@@ -305,7 +293,7 @@ func (tx *Tx) buildTxIDRootIdx(txID uint64, countFlag bool) error {
 
 			filePath = tx.db.getBPTRootTxIDPath(fID)
 			txIDRootIdx := NewTree()
-			rootAddress := strconv2.Int64ToStr(txIDIdx.root.Address)
+			rootAddress := helper.Int64ToStr(txIDIdx.root.Address)
 
 			txIDRootIdx.Insert([]byte(rootAddress), nil, &Hint{Meta: &MetaData{Flag: DataSetFlag}}, countFlag)
 			txIDRootIdx.Filepath = filePath
@@ -352,12 +340,6 @@ func (tx *Tx) rotateActiveFile() error {
 	var err error
 	fID := tx.db.MaxFileID
 	tx.db.MaxFileID++
-
-	if !tx.db.opt.SyncEnable && tx.db.opt.RWMode == MMap {
-		if err := tx.db.ActiveFile.rwManager.Sync(); err != nil {
-			return err
-		}
-	}
 
 	if err := tx.db.ActiveFile.rwManager.Close(); err != nil {
 		return err
@@ -406,8 +388,7 @@ func (tx *Tx) rotateActiveFile() error {
 	}
 
 	// reset ActiveFile
-	path := tx.db.getDataPath(tx.db.MaxFileID)
-	tx.db.ActiveFile, err = NewDataFile(path, tx.db.opt.SegmentSize, tx.db.opt.RWMode)
+	tx.db.ActiveFile, err = NewDataFile(tx.db.opt.Dir, tx.db.MaxFileID, tx.db.opt.SegmentSize, tx.db.opt.RWMode)
 	if err != nil {
 		return err
 	}
