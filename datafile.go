@@ -118,7 +118,7 @@ func (df *DataFile) ReadEntryAt(off int) (e *Entry, err error) {
 
 	// 继续读取 bucket
 	// 1. 跳过已经读取的 metadata
-	off += DataEntryHeaderSize
+	off += int(DataEntryHeaderSize)
 	// 2. 通过 定长部分存储的 BucketSize 读取 Bucket
 	bucketBuf := make([]byte, meta.BucketSize)
 	if _, err = df.rwManager.ReadAt(bucketBuf, int64(off)); err != nil {

@@ -20,6 +20,30 @@ type BPTreeRootIdx struct {
 	end       []byte
 }
 
+// Persistence writes BPTreeRootIdx entry to the File starting at byte offset off.
+func (bri *BPTreeRootIdx) Persistence(path string, offset int64, syncEnable bool) (number int, err error) {
+	fd, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return 0, err
+	}
+	defer fd.Close()
+
+	data := bri.Encode()
+
+	n, err := fd.WriteAt(data, offset)
+	if err != nil {
+		return 0, err
+	}
+
+	if syncEnable {
+		err = fd.Sync()
+		if err != nil {
+			return 0, err
+		}
+	}
+	return n, err
+}
+
 // Encode returns the slice after the BPTreeRootIdx be encoded.
 func (bri *BPTreeRootIdx) Encode() []byte {
 	buf := make([]byte, bri.Size())
