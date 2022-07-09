@@ -141,13 +141,17 @@ func (db *DB) getBPTPath(fID int64) string {
 // Open 根据  option.Options 开启一个 DB
 func Open(opt Options) (*DB, error) {
 	db := &DB{
-		opt:                  opt,
-		BPTreeKeyEntryPosMap: make(map[string]int64),
-		committedTxIds:       make(map[uint64]struct{}),
-		MaxFileID:            0,
-		KeyCount:             0,
-		closed:               false,
-		isMerging:            false,
+		opt:                     opt,
+		BPTreeKeyEntryPosMap:    make(map[string]int64),
+		committedTxIds:          make(map[uint64]struct{}),
+		MaxFileID:               0,
+		KeyCount:                0,
+		closed:                  false,
+		isMerging:               false,
+		bucketMetas:             make(map[string]*BucketMeta),
+		ActiveCommittedTxIdsIdx: NewTree(),
+		ActiveBPTreeIdx:         NewTree(),
+		BPTreeIdx:               make(BPTreeIdx),
 	}
 	//判断文件夹在不在,不在就创建
 	if ok := helper.PathIsExist(db.opt.Dir); !ok {

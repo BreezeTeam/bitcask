@@ -258,3 +258,8 @@ func (r *Record) UpdateRecord(h *Hint, e *Entry) error {
 
 	return nil
 }
+
+// IsExpired returns the record if expired or not.
+func (r *Record) IsExpired() bool {
+	return IsExpired(r.H.Meta.TTL, r.H.Meta.Timestamp)
+}
