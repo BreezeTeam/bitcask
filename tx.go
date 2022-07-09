@@ -3,7 +3,9 @@ package bitcask
 import (
 	"bitcask/helper"
 	"errors"
+	"fmt"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -446,6 +448,64 @@ func (tx *Tx) checkTxIsClosed() error {
 	return nil
 }
 
+// Get retrieves the value for a key in the bucket.
+// The returned value is only valid for the life of the transaction.
+func (tx *Tx) Get(bucket string, key []byte) (e *Entry, err error) {
+	if err := tx.checkTxIsClosed(); err != nil {
+		return nil, err
+	}
+
+	idxMode := tx.db.opt.EntryIdxMode
+
+	if idxMode == HintBPTSparseIdxMode {
+		return tx.getByHintBPTSparseIdx(bucket, key)
+	}
+
+	if idxMode == HintKeyValAndRAMIdxMode || idxMode == HintKeyAndRAMIdxMode {
+		if idx, ok := tx.db.BPTreeIdx[bucket]; ok {
+			r, err := idx.Find(key)
+			if err != nil {
+				return nil, err
+			}
+
+			if _, ok := tx.db.committedTxIds[r.H.Meta.TxID]; !ok {
+				return nil, ErrNotFoundKey
+			}
+
+			if r.H.Meta.Flag == DataDeleteFlag || r.IsExpired() {
+				return nil, ErrNotFoundKey
+			}
+
+			if idxMode == HintKeyValAndRAMIdxMode {
+				return r.E, nil
+			}
+
+			if idxMode == HintKeyAndRAMIdxMode {
+				df, err := NewDataFile(tx.db.opt.Dir, r.H.FileID, tx.db.opt.SegmentSize, tx.db.opt.RWMode)
+				defer df.rwManager.Close()
+
+				if err != nil {
+					return nil, err
+				}
+
+				item, err := df.ReadEntryAt(int(r.H.DataPos))
+				if err != nil {
+					return nil, fmt.Errorf("read err. pos %d, key %s, err %s", r.H.DataPos, string(key), err)
+				}
+
+				return item, nil
+			}
+		}
+	}
+
+	return nil, ErrBucketAndKey(bucket, key)
+}
+
+// ErrBucketAndKey returns when bucket or key not found.
+func ErrBucketAndKey(bucket string, key []byte) error {
+	return fmt.Errorf("%w:bucket:%s,key:%s", ErrBucketNotFound, bucket, key)
+}
+
 // put sets the value for a key in the bucket.
 // Returns an error if tx is closed, if performing a write operation on a read-only transaction, if the key is empty.
 func (tx *Tx) put(bucket string, key, value []byte, ttl uint32, flag uint16, timestamp uint64, ds uint16) error {
@@ -479,4 +539,267 @@ func (tx *Tx) put(bucket string, key, value []byte, ttl uint32, flag uint16, tim
 	})
 
 	return nil
+}
+
+func (tx *Tx) getByHintBPTSparseIdx(bucket string, key []byte) (e *Entry, err error) {
+	newKey := getNewKey(bucket, key)
+
+	entry, err := tx.getByHintBPTSparseIdxInMem(newKey)
+	if entry != nil && err == nil {
+		if entry.Meta.Flag == DataDeleteFlag || IsExpired(entry.Meta.TTL, entry.Meta.Timestamp) {
+			return nil, ErrNotFoundKey
+		}
+		return entry, err
+	}
+
+	entry, err = tx.getByHintBPTSparseIdxOnDisk(bucket, key)
+	if entry != nil && err == nil {
+		return entry, err
+	}
+
+	return nil, ErrNotFoundKey
+}
+
+func (tx *Tx) getByHintBPTSparseIdxInMem(key []byte) (e *Entry, err error) {
+	// Read in memory.
+	r, err := tx.db.ActiveBPTreeIdx.Find(key)
+	if err == nil && r != nil {
+		if _, err := tx.db.ActiveCommittedTxIdsIdx.Find([]byte(helper.Int64ToStr(int64(r.H.Meta.TxID)))); err == nil {
+			df, err := NewDataFile(tx.db.opt.Dir, r.H.FileID, tx.db.opt.SegmentSize, tx.db.opt.RWMode)
+			defer df.rwManager.Close()
+			if err != nil {
+				return nil, err
+			}
+
+			return df.ReadEntryAt(int(r.H.DataPos))
+		}
+
+		return nil, ErrNotFoundKey
+	}
+
+	return nil, nil
+}
+
+// FindLeafOnDisk returns binary leaf node on disk at given fId, rootOff and key.
+func (tx *Tx) FindLeafOnDisk(fID int64, rootOff int64, key, newKey []byte) (bn *BinaryNode, err error) {
+	var i uint16
+	var curr *BinaryNode
+
+	filepath := tx.db.getBPTPath(fID)
+	curr, err = ReadNode(filepath, rootOff)
+	if err != nil {
+		return nil, err
+	}
+
+	for curr.IsLeaf != 1 {
+		i = 0
+		for i < curr.KeysNum {
+			df, err := NewDataFile(tx.db.opt.Dir, fID, tx.db.opt.SegmentSize, tx.db.opt.RWMode)
+			if err != nil {
+				return nil, err
+			}
+
+			item, err := df.ReadEntryAt(int(curr.Keys[i]))
+			df.rwManager.Close()
+
+			if err != nil {
+				return nil, err
+			}
+
+			newKeyTemp := getNewKey(string(item.Meta.Bucket), item.Key)
+			if compare(newKey, newKeyTemp) >= 0 {
+				i++
+			} else {
+				break
+			}
+		}
+		address := curr.Pointers[i]
+
+		curr, err = ReadNode(filepath, address)
+	}
+
+	return curr, nil
+}
+
+// FindOnDisk returns entry on disk at given fID, rootOff and key.
+func (tx *Tx) FindOnDisk(fID uint64, rootOff uint64, key, newKey []byte) (entry *Entry, err error) {
+	var (
+		bnLeaf *BinaryNode
+		i      uint16
+		df     *DataFile
+	)
+
+	bnLeaf, err = tx.FindLeafOnDisk(int64(fID), int64(rootOff), key, newKey)
+
+	if bnLeaf == nil {
+		return nil, ErrKeyNotFound
+	}
+
+	for i = 0; i < bnLeaf.KeysNum; i++ {
+		df, err = NewDataFile(tx.db.opt.Dir, int64(fID), tx.db.opt.SegmentSize, tx.db.opt.RWMode)
+		if err != nil {
+			return nil, err
+		}
+
+		entry, err = df.ReadEntryAt(int(bnLeaf.Keys[i]))
+		df.rwManager.Close()
+
+		if err != nil {
+			return nil, err
+		}
+
+		newKeyTemp := getNewKey(string(entry.Meta.Bucket), entry.Key)
+		if entry != nil && compare(newKey, newKeyTemp) == 0 {
+			return entry, nil
+		}
+	}
+
+	if i == bnLeaf.KeysNum {
+		return nil, ErrKeyNotFound
+	}
+
+	return
+}
+
+func (tx *Tx) getByHintBPTSparseIdxOnDisk(bucket string, key []byte) (e *Entry, err error) {
+	// Read on disk.
+	var bptSparseIdxGroup []*BPTreeRootIdx
+	for _, bptRootIdxPointer := range tx.db.BPTreeRootIdxes {
+		bptSparseIdxGroup = append(bptSparseIdxGroup, &BPTreeRootIdx{
+			fID:     bptRootIdxPointer.fID,
+			rootOff: bptRootIdxPointer.rootOff,
+			start:   bptRootIdxPointer.start,
+			end:     bptRootIdxPointer.end,
+		})
+	}
+
+	// Sort the fid from largest to smallest, to ensure that the latest data is first compared.
+	SortFID(bptSparseIdxGroup, func(p, q *BPTreeRootIdx) bool {
+		return p.fID > q.fID
+	})
+
+	newKey := getNewKey(bucket, key)
+	for _, bptSparse := range bptSparseIdxGroup {
+		if compare(newKey, bptSparse.start) >= 0 && compare(newKey, bptSparse.end) <= 0 {
+			fID := bptSparse.fID
+			rootOff := bptSparse.rootOff
+
+			e, err = tx.FindOnDisk(fID, rootOff, key, newKey)
+			if err == nil && e != nil {
+				if e.Meta.Flag == DataDeleteFlag || IsExpired(e.Meta.TTL, e.Meta.Timestamp) {
+					return nil, ErrNotFoundKey
+				}
+
+				txIDStr := helper.Int64ToStr(int64(e.Meta.TxID))
+				if _, err := tx.db.ActiveCommittedTxIdsIdx.Find([]byte(txIDStr)); err == nil {
+					return e, err
+				}
+				if ok, _ := tx.FindTxIDOnDisk(fID, e.Meta.TxID); !ok {
+					return nil, ErrNotFoundKey
+				}
+
+				return e, err
+			}
+		}
+		continue
+	}
+
+	return nil, nil
+}
+
+// FindTxIDOnDisk returns if txId on disk at given fid and txID.
+func (tx *Tx) FindTxIDOnDisk(fID, txID uint64) (ok bool, err error) {
+	var i uint16
+
+	filepath := tx.db.getBPTRootTxIDPath(int64(fID))
+	node, err := ReadNode(filepath, 0)
+
+	if err != nil {
+		return false, err
+	}
+
+	filepath = tx.db.getBPTTxIDPath(int64(fID))
+	rootAddress := node.Keys[0]
+	curr, err := ReadNode(filepath, rootAddress)
+
+	if err != nil {
+		return false, err
+	}
+
+	txIDStr := helper.IntToStr(int(txID))
+
+	for curr.IsLeaf != 1 {
+		i = 0
+		for i < curr.KeysNum {
+			if compare([]byte(txIDStr), []byte(helper.Int64ToStr(curr.Keys[i]))) >= 0 {
+				i++
+			} else {
+				break
+			}
+		}
+
+		address := curr.Pointers[i]
+		curr, err = ReadNode(filepath, int64(address))
+	}
+
+	if curr == nil {
+		return false, ErrKeyNotFound
+	}
+
+	for i = 0; i < curr.KeysNum; i++ {
+		if compare([]byte(txIDStr), []byte(helper.Int64ToStr(curr.Keys[i]))) == 0 {
+			break
+		}
+	}
+
+	if i == curr.KeysNum {
+		return false, ErrKeyNotFound
+	}
+
+	return true, nil
+}
+
+type sortBy func(p, q *BPTreeRootIdx) bool
+
+// BPTreeRootIdxWrapper records BSGroup and by, in order to sort.
+type BPTreeRootIdxWrapper struct {
+	BSGroup []*BPTreeRootIdx
+	by      func(p, q *BPTreeRootIdx) bool
+}
+
+// Less reports whether the element with
+// index i should sort before the element with index j.
+func (bsw BPTreeRootIdxWrapper) Less(i, j int) bool {
+	return bsw.by(bsw.BSGroup[i], bsw.BSGroup[j])
+}
+
+// Swap swaps the elements with indexes i and j.
+func (bsw BPTreeRootIdxWrapper) Swap(i, j int) {
+	bsw.BSGroup[i], bsw.BSGroup[j] = bsw.BSGroup[j], bsw.BSGroup[i]
+}
+
+// Len is the number of elements in the collection bsw.BSGroup.
+func (bsw BPTreeRootIdxWrapper) Len() int {
+	return len(bsw.BSGroup)
+}
+
+// SortFID sorts BPTreeRootIdx data.
+func SortFID(BPTreeRootIdxGroup []*BPTreeRootIdx, by sortBy) {
+	sort.Sort(BPTreeRootIdxWrapper{BSGroup: BPTreeRootIdxGroup, by: by})
+}
+
+// IsExpired checks the ttl if expired or not.
+func IsExpired(ttl uint32, timestamp uint64) bool {
+	now := time.Now().Unix()
+	if ttl > 0 && uint64(ttl)+timestamp > uint64(now) || ttl == Persistent {
+		return false
+	}
+
+	return true
+}
+
+func getNewKey(bucket string, key []byte) []byte {
+	newKey := []byte(bucket)
+	newKey = append(newKey, key...)
+	return newKey
 }

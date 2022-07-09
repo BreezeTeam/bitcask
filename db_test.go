@@ -22,18 +22,20 @@ func TestDB_Basic(t *testing.T) {
 	}
 
 	//get
-	//if err := db.View(
-	//	func(tx *Tx) error {
-	//		e, err := tx.Get(bucket, key)
-	//		if err == nil {
-	//			if string(e.Value) != string(val) {
-	//				t.Errorf("err Tx Get. got %s want %s", string(e.Value), string(val))
-	//			}
-	//		}
-	//		return nil
-	//	}); err != nil {
-	//	t.Fatal(err)
-	//}
+	if err := db.View(
+		func(tx *Tx) error {
+			e, err := tx.Get(bucket, key)
+			if err == nil {
+				if string(e.Value) != string(val) {
+					t.Errorf("err Tx Get. got %s want %s", string(e.Value), string(val))
+				}
+			}
+			println(bucket)
+			println(string(key))
+			return nil
+		}); err != nil {
+		t.Fatal(err)
+	}
 
 	// delete
 	//if err := db.Update(
