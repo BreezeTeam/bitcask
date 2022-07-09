@@ -6,7 +6,7 @@ type EntryIdxMode int // 条目索引模式
 
 const (
 	// HintKeyValAndRAMIdxMode ram key value
-	HintKeyValAndRAMIdxMode EntryIdxMode = iota // todo:
+	HintKeyValAndRAMIdxMode EntryIdxMode = iota
 
 	// HintKeyAndRAMIdxMode ram key
 	HintKeyAndRAMIdxMode
@@ -30,7 +30,8 @@ type Options struct {
 }
 
 // defaultSegmentSize 8 mb 的默认写入大小
-var defaultSegmentSize int64 = 0.5 * 1024 * 1024
+//var defaultSegmentSize int64 = 0.5 * 1024 * 1024
+var defaultSegmentSize int64 = 100
 
 // DefaultOptions represents the default options.
 var DefaultOptions = Options{

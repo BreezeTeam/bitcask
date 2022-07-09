@@ -160,6 +160,19 @@ func Open(opt Options) (*DB, error) {
 	}
 	//创建需要的文件夹
 	if opt.EntryIdxMode == HintBPTSparseIdxMode {
+		bptRootIdxDir := db.opt.Dir + "/" + bptDir + "/root"
+		if ok := helper.PathIsExist(bptRootIdxDir); !ok {
+			if err := os.MkdirAll(bptRootIdxDir, os.ModePerm); err != nil {
+				return nil, err
+			}
+		}
+
+		bptTxIDIdxDir := db.opt.Dir + "/" + bptDir + "/txid"
+		if ok := helper.PathIsExist(bptTxIDIdxDir); !ok {
+			if err := os.MkdirAll(bptTxIDIdxDir, os.ModePerm); err != nil {
+				return nil, err
+			}
+		}
 		bucketMetaDir := db.opt.Dir + "/meta/bucket"
 		if ok := helper.PathIsExist(bucketMetaDir); !ok {
 			if err := os.MkdirAll(bucketMetaDir, os.ModePerm); err != nil {
