@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"sort"
@@ -422,6 +421,7 @@ func (db *DB) parseDataFiles(dataFileIds []int) (unconfirmedRecords []*Record, c
 	var (
 		dataUnconfirmedRecords []*Record
 	)
+	committedTxIds = make(map[uint64]struct{})
 	// 如果是稀疏索引模式,则 只用解析最后一个数据文件,即 fileId 最大的那个文件
 	if db.opt.EntryIdxMode == HintBPTSparseIdxMode {
 		sort.Ints(dataFileIds)
@@ -440,7 +440,7 @@ func (db *DB) parseDataFiles(dataFileIds []int) (unconfirmedRecords []*Record, c
 		// EntryIdxMode entry 的索引模式设置
 		// BPTreeKeyEntryPosMap bpt 偏移mapping
 		// committedTxIds 事务提交mapping
-		dataUnconfirmedRecords, err = f.ParseData(int64(dataID), 0, db.opt.EntryIdxMode, db.BPTreeKeyEntryPosMap, committedTxIds, db.opt.SegmentSize)
+		dataUnconfirmedRecords, err = f.ParseData(int64(dataID), 0, db.opt.EntryIdxMode, db.BPTreeKeyEntryPosMap, db.ActiveCommittedTxIdsIdx, committedTxIds, db.opt.SegmentSize)
 		if err != nil {
 			return nil, nil, fmt.Errorf("when build hintIndex readAt err: %s", err)
 		}
@@ -453,11 +453,9 @@ func (db *DB) parseDataFiles(dataFileIds []int) (unconfirmedRecords []*Record, c
 func (db *DB) buildActiveBPTreeIdx(r *Record) error {
 	Key := r.H.Meta.Bucket
 	Key = append(Key, r.H.Key...)
-	log.Fatal("buildActiveBPTreeIdx failed")
-	// BPTree Insert TODO
-	//if err := db.ActiveBPTreeIdx.Insert(Key, r.E, r.H, CountFlagEnabled); err != nil {
-	//	return fmt.Errorf("when build BPTreeIdx insert index err: %s", err)
-	//}
+	if err := db.ActiveBPTreeIdx.Insert(Key, r.E, r.H, CountFlagEnabled); err != nil {
+		return fmt.Errorf("when build BPTreeIdx insert index err: %s", err)
+	}
 
 	return nil
 }
@@ -466,34 +464,9 @@ func (db *DB) buildBPTreeIdx(bucket string, r *Record) error {
 	if _, ok := db.BPTreeIdx[bucket]; !ok {
 		db.BPTreeIdx[bucket] = NewTree()
 	}
-
-	log.Fatal("buildBPTreeIdx failed")
-	// BPTree Insert TODO
-	//if err := db.BPTreeIdx[bucket].Insert(r.H.Key, r.E, r.H, CountFlagEnabled); err != nil {
-	//	return fmt.Errorf("when build BPTreeIdx insert index err: %s", err)
-	//}
-
-	return nil
-}
-
-// 这里会构建 Set，SortedSet,List
-func (db *DB) buildOtherIdxes(bucket string, r *Record) error {
-	//TODO：  Set，SortedSet,List
-	//if r.H.Meta.Ds == DataStructureSet {
-	//	if err := db.buildSetIdx(bucket, r); err != nil {
-	//		return err
-	//	}
-	//}
-	//if r.H.Meta.Ds == DataStructureSortedSet {
-	//	if err := db.buildSortedSetIdx(bucket, r); err != nil {
-	//		return err
-	//	}
-	//}
-	//if r.H.Meta.Ds == DataStructureList {
-	//	if err := db.buildListIdx(bucket, r); err != nil {
-	//		return err
-	//	}
-	//}
+	if err := db.BPTreeIdx[bucket].Insert(r.H.Key, r.E, r.H, CountFlagEnabled); err != nil {
+		return fmt.Errorf("when build BPTreeIdx insert index err: %s", err)
+	}
 
 	return nil
 }

@@ -759,6 +759,15 @@ func (tx *Tx) FindTxIDOnDisk(fID, txID uint64) (ok bool, err error) {
 	return true, nil
 }
 
+// Delete removes a key from the bucket at given bucket and key.
+func (tx *Tx) Delete(bucket string, key []byte) error {
+	if err := tx.checkTxIsClosed(); err != nil {
+		return err
+	}
+
+	return tx.put(bucket, key, nil, Persistent, DataDeleteFlag, uint64(time.Now().Unix()), DataStructureBPTree)
+}
+
 type sortBy func(p, q *BPTreeRootIdx) bool
 
 // BPTreeRootIdxWrapper records BSGroup and by, in order to sort.
