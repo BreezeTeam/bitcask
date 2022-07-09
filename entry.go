@@ -226,10 +226,6 @@ func ReadBucketMetaFromPath(path string) (bucketMeta *BucketMeta, err error) {
 		endSize:   endSize,
 		crc:       binary.LittleEndian.Uint32(headerBuff[0:4]),
 	}
-	//crc32 校验
-	if bucketMeta.GetCrc(headerBuff) != bucketMeta.crc {
-		return nil, ErrCrc
-	}
 
 	//读取变长部分
 	//1.读取 start
@@ -247,7 +243,10 @@ func ReadBucketMetaFromPath(path string) (bucketMeta *BucketMeta, err error) {
 		return nil, err
 	}
 	bucketMeta.end = endBuf
-
+	//crc32 校验
+	if bucketMeta.GetCrc(headerBuff) != bucketMeta.crc {
+		return nil, ErrCrc
+	}
 	return
 }
 

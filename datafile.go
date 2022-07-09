@@ -109,13 +109,6 @@ func (df *DataFile) ReadEntryAt(off int) (e *Entry, err error) {
 		return nil, nil
 
 	}
-	//如果 entry不是0，那么对 header 进行 crc32 校验
-	crc := e.GetCrc(metaDataBuf)
-	if crc != e.crc {
-		return nil, ErrCrc
-	}
-	// 如果校验通过，那么 继续读取解析变长部分
-
 	// 继续读取 bucket
 	// 1. 跳过已经读取的 metadata
 	off += int(DataEntryHeaderSize)
@@ -145,7 +138,11 @@ func (df *DataFile) ReadEntryAt(off int) (e *Entry, err error) {
 		return nil, err
 	}
 	e.Value = valBuf
-
+	//如果 entry不是0，那么对 header 进行 crc32 校验
+	crc := e.GetCrc(metaDataBuf)
+	if crc != e.crc {
+		return nil, ErrCrc
+	}
 	return
 }
 
@@ -157,6 +154,7 @@ func (df *DataFile) ReadEntryAt(off int) (e *Entry, err error) {
 func (df *DataFile) ParseData(fID int64, off int64,
 	entryIdxMode EntryIdxMode,
 	entryKeyPosMap map[string]int64,
+	activeCommittedTxIdsIdxs *BPTree,
 	committedTxIds map[uint64]struct{}, segmentSize int64) (unconfirmedRecords []*Record, err error) {
 	var (
 		recordEntry *Entry
@@ -192,8 +190,8 @@ func (df *DataFile) ParseData(fID int64, off int64,
 			if entry.Meta.Status == Committed {
 				committedTxIds[entry.Meta.TxID] = struct{}{}
 				// todo: BPTree Insert
-				//db.ActiveCommittedTxIdsIdx.Insert([]byte(strconv2.Int64ToStr(int64(entry.Meta.TxID))), nil,
-				//	&Hint{Meta: &MetaData{Flag: DataSetFlag}}, CountFlagEnabled)
+				activeCommittedTxIdsIdxs.Insert([]byte(helper.Int64ToStr(int64(entry.Meta.TxID))), nil,
+					&Hint{Meta: &MetaData{Flag: DataSetFlag}}, CountFlagEnabled)
 			}
 			// 添加到未经证实的记录列表中
 			// 如果 不是KeyVal 模式，那么recordEntry 将为nil

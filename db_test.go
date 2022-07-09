@@ -28,59 +28,73 @@ func TestDB_Basic(t *testing.T) {
 			if err == nil {
 				if string(e.Value) != string(val) {
 					t.Errorf("err Tx Get. got %s want %s", string(e.Value), string(val))
+				} else {
+					t.Logf("Tx Get. got %s want %s", string(e.Value), string(val))
 				}
+			} else {
+				t.Errorf("error: %s", err.Error())
 			}
-			println(bucket)
-			println(string(key))
 			return nil
 		}); err != nil {
 		t.Fatal(err)
 	}
 
-	// delete
-	//if err := db.Update(
-	//	func(tx *Tx) error {
-	//		err := tx.Delete(bucket, key)
-	//		if err != nil {
-	//			t.Fatal(err)
-	//		}
-	//		return nil
-	//	}); err != nil {
-	//	t.Fatal(err)
-	//}
+	//delete
+	if err := db.Update(
+		func(tx *Tx) error {
+			err := tx.Delete(bucket, key)
+			if err != nil {
+				t.Fatal(err)
+			} else {
+				t.Logf("delete success %s %s", bucket, key)
+			}
+			return nil
+		}); err != nil {
+		t.Fatal(err)
+	}
 
-	//if err := db.View(
-	//	func(tx *Tx) error {
-	//		_, err := tx.Get(bucket, key)
-	//		if err == nil {
-	//			t.Errorf("err Tx Get.")
-	//		}
-	//		return nil
-	//	}); err != nil {
-	//	t.Fatal(err)
-	//}
+	if err := db.View(
+		func(tx *Tx) error {
+			e, err := tx.Get(bucket, key)
+			if err == nil {
+				if string(e.Value) != string(val) {
+					t.Errorf("err Tx Get. got %s want %s", string(e.Value), string(val))
+				} else {
+					t.Logf("Tx Get. got %s want %s", string(e.Value), string(val))
+				}
+			} else {
+				t.Errorf("error: %s", err.Error())
+			}
+			return nil
+		}); err != nil {
+		t.Fatal(err)
+	}
 
-	////update
-	//val = []byte("val001")
-	//if err := db.Update(
-	//	func(tx *Tx) error {
-	//		return tx.Put(bucket, key, val, Persistent)
-	//	}); err != nil {
-	//	t.Fatal(err)
-	//}
+	//update
+	val = []byte("val001")
+	if err := db.Update(
+		func(tx *Tx) error {
+			return tx.Put(bucket, key, val, Persistent)
+		}); err != nil {
+		t.Fatal(err)
+	}
 
-	//if err := db.View(
-	//	func(tx *Tx) error {
-	//		e, err := tx.Get(bucket, key)
-	//		if err == nil {
-	//			if string(e.Value) != string(val) {
-	//				t.Errorf("err Tx Get. got %s want %s", string(e.Value), string(val))
-	//			}
-	//		}
-	//		return nil
-	//	}); err != nil {
-	//	t.Fatal(err)
-	//}
+	if err := db.View(
+		func(tx *Tx) error {
+			e, err := tx.Get(bucket, key)
+			if err == nil {
+				if string(e.Value) != string(val) {
+					t.Errorf("err Tx Get. got %s want %s", string(e.Value), string(val))
+				} else {
+					t.Logf("Tx Get. got %s want %s", string(e.Value), string(val))
+				}
+			} else {
+				t.Errorf("error: %s", err.Error())
+			}
+			return nil
+		}); err != nil {
+		t.Fatal(err)
+	}
 }
 
 /////////////////
