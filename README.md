@@ -8,11 +8,6 @@ a log-structured hash table for fast key/value data with golang
 2. 学习rosedb，nustdb等实现
 3. KV存储入门
 
-## 流程图
-
-https://www.processon.com/diagraming/62cb661ff346fb42faf787b2
-
-
 references:
 
 [rosedb](https://github.com/flower-corp/rosedb)
@@ -25,3 +20,8 @@ references:
 
 [优雅的Bitcask/BeansDB](https://zhuanlan.zhihu.com/p/53682577)
 
+## 流程图
+
+### nustdb流程图
+
+![nustdb流程图](bitcask-nustdb-流程图.png)
