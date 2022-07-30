@@ -36,6 +36,6 @@ var defaultSegmentSize int64 = 100
 // DefaultOptions represents the default options.
 var DefaultOptions = Options{
 	SegmentSize:  defaultSegmentSize,
-	RWMode:       rwmanager.FileIO,     //默认为标准文件io
-	EntryIdxMode: HintBPTSparseIdxMode, // B+ 树稀疏索引
+	RWMode:       rwmanager.FileIO,        //默认为标准文件io
+	EntryIdxMode: HintKeyValAndRAMIdxMode, // B+ 树稀疏索引
 }
