@@ -146,7 +146,7 @@ func Open(opt Options) (*DB, error) {
 		MaxFileID:               0,
 		KeyCount:                0,
 		closed:                  false,
-		isMerging:               false,
+		isMerging:               true,
 		bucketMetas:             make(map[string]*BucketMeta),
 		ActiveCommittedTxIdsIdx: NewTree(),
 		ActiveBPTreeIdx:         NewTree(),
@@ -313,6 +313,165 @@ func (db *DB) buildBucketMetaIdx() error {
 	}
 
 	return nil
+}
+func (db *DB) Merge() error {
+	var (
+		off                 int64
+		pendingMergeFIds    []int
+		pendingMergeEntries []*Entry
+	)
+
+	if db.opt.EntryIdxMode == HintBPTSparseIdxMode {
+		return ErrNotSupportHintBPTSparseIdxMode
+	}
+
+	db.isMerging = true
+
+	_, pendingMergeFIds = db.getMaxFileIDAndFileIDs()
+
+	if len(pendingMergeFIds) < 2 {
+		db.isMerging = false
+		return errors.New("the number of files waiting to be merged is at least 2")
+	}
+
+	for _, pendingMergeFId := range pendingMergeFIds {
+		off = 0
+		f, err := NewDataFile(db.opt.Dir, int64(pendingMergeFId), db.opt.SegmentSize, db.opt.RWMode)
+		if err != nil {
+			db.isMerging = false
+			return err
+		}
+
+		pendingMergeEntries = []*Entry{}
+
+		for {
+			if entry, err := f.ReadEntryAt(int(off)); err == nil {
+				if entry == nil {
+					break
+				}
+
+				var skipEntry bool
+
+				if db.isFilterEntry(entry) {
+					skipEntry = true
+				}
+
+				// check if we have a new entry with same key and bucket
+				if r, _ := db.getRecordFromKey(entry.Meta.Bucket, entry.Key); r != nil && !skipEntry {
+					if r.H.FileID > int64(pendingMergeFId) {
+						skipEntry = true
+					} else if r.H.FileID == int64(pendingMergeFId) && r.H.DataPos > uint64(off) {
+						skipEntry = true
+					}
+				}
+
+				if skipEntry {
+					off += entry.Size()
+					if off >= db.opt.SegmentSize {
+						break
+					}
+					continue
+				}
+
+				pendingMergeEntries = db.getPendingMergeEntries(entry, pendingMergeEntries)
+
+				off += entry.Size()
+				if off >= db.opt.SegmentSize {
+					break
+				}
+
+			} else {
+				if err == io.EOF {
+					break
+				}
+				f.rwManager.Close()
+				return fmt.Errorf("when merge operation build hintIndex readAt err: %s", err)
+			}
+		}
+
+		if err := db.reWriteData(pendingMergeEntries); err != nil {
+			f.rwManager.Close()
+			return err
+		}
+
+		f.rwManager.Close()
+		if err := os.Remove(db.getDataPath(int64(pendingMergeFId))); err != nil {
+			db.isMerging = false
+			return fmt.Errorf("when merge err: %s", err)
+		}
+	}
+
+	return nil
+}
+
+// getRecordFromKey fetches Record for given key and bucket
+// this is a helper function used in Merge so it does not work if index mode is HintBPTSparseIdxMode
+func (db *DB) getRecordFromKey(bucket, key []byte) (record *Record, err error) {
+	idxMode := db.opt.EntryIdxMode
+	if !(idxMode == HintKeyValAndRAMIdxMode || idxMode == HintKeyAndRAMIdxMode) {
+		return nil, errors.New("not implemented")
+	}
+	idx, ok := db.BPTreeIdx[string(bucket)]
+	if !ok {
+		return nil, ErrBucketNotFound
+	}
+	return idx.Find(key)
+}
+
+func (db *DB) reWriteData(pendingMergeEntries []*Entry) error {
+	if len(pendingMergeEntries) == 0 {
+		return nil
+	}
+	tx, err := db.Begin(true)
+	if err != nil {
+		db.isMerging = false
+		return err
+	}
+
+	dataFile, err := NewDataFile(db.opt.Dir, db.MaxFileID+1, db.opt.SegmentSize, db.opt.RWMode)
+	if err != nil {
+		db.isMerging = false
+		return err
+	}
+	db.ActiveFile = dataFile
+	db.MaxFileID++
+
+	for _, e := range pendingMergeEntries {
+		err := tx.put(string(e.Meta.Bucket), e.Key, e.Value, e.Meta.TTL, e.Meta.Flag, e.Meta.Timestamp, e.Meta.Ds)
+		if err != nil {
+			tx.Rollback()
+			db.isMerging = false
+			return err
+		}
+	}
+	tx.Commit()
+	return nil
+}
+
+func (db *DB) getPendingMergeEntries(entry *Entry, pendingMergeEntries []*Entry) []*Entry {
+	if entry.Meta.Ds == DataStructureBPTree {
+		if r, err := db.BPTreeIdx[string(entry.Meta.Bucket)].Find(entry.Key); err == nil {
+			if r.H.Meta.Flag == DataSetFlag {
+				pendingMergeEntries = append(pendingMergeEntries, entry)
+			}
+		}
+	}
+	return pendingMergeEntries
+}
+
+func (db *DB) isFilterEntry(entry *Entry) bool {
+	if entry.Meta.Flag == DataDeleteFlag || entry.Meta.Flag == DataRPopFlag ||
+		entry.Meta.Flag == DataLPopFlag || entry.Meta.Flag == DataLRemFlag ||
+		entry.Meta.Flag == DataLTrimFlag || entry.Meta.Flag == DataZRemFlag ||
+		entry.Meta.Flag == DataZRemRangeByRankFlag || entry.Meta.Flag == DataZPopMaxFlag ||
+		entry.Meta.Flag == DataZPopMinFlag || IsExpired(entry.Meta.TTL, entry.Meta.Timestamp) {
+		return true
+	}
+
+	return false
+}
+func (db *DB) getDataPath(fID int64) string {
+	return db.opt.Dir + "/" + helper.Int64ToStr(fID) + DataSuffix
 }
 
 // bucketMetas 存储路径
