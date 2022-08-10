@@ -11,6 +11,8 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
+	"time"
 )
 
 // 这里就是 value 其数据结构 类型的 flag
@@ -22,6 +24,8 @@ const (
 	// DataStructureNone represents not the data structure
 	// 不表示数据结构
 	DataStructureNone
+
+	DataStructureValuePointer
 )
 
 var (
@@ -42,6 +46,8 @@ var (
 
 	// ErrNotSupportHintBPTSparseIdxMode is returned not support mode `HintBPTSparseIdxMode`
 	ErrNotSupportHintBPTSparseIdxMode = errors.New("not support mode `HintBPTSparseIdxMode`")
+
+	ErrMergeRunning = errors.New("merge is running")
 )
 
 const (
@@ -100,7 +106,7 @@ const (
 	DataListBucketDeleteFlag
 )
 
-//DB
+// DB
 type (
 	DB struct {
 		opt                     Options   // the database options
@@ -117,6 +123,12 @@ type (
 		closed                  bool
 		isMerging               bool
 		bucketMetas             BucketMetasIdx // BucketMeta 索引
+		lastSyncAt              time.Time
+		dirtyBytes              int64
+		dirtyCommits            int
+		lastSyncLatency         time.Duration
+		metrics                 metrics
+		valueLog                *valueLog
 	}
 
 	// BPTreeIdx B+ tree 索引
@@ -124,6 +136,16 @@ type (
 
 	// BucketMetasIdx 存储桶元信息的索引
 	BucketMetasIdx map[string]*BucketMeta
+
+	DBStats struct {
+		DataFileCount        int
+		ActiveFileID         int64
+		ActiveFileWriteOff   int64
+		ActiveFileActualSize int64
+		KeyCount             int
+		ValidKeyCount        int
+		IsMerging            bool
+	}
 )
 
 func (db *DB) getBPTTxIDPath(fID int64) string {
@@ -139,6 +161,9 @@ func (db *DB) getBPTPath(fID int64) string {
 
 // Open 根据  option.Options 开启一个 DB
 func Open(opt Options) (*DB, error) {
+	if opt.FaultInjection.Enable && opt.faultState == nil {
+		opt.faultState = &faultInjectionState{}
+	}
 	db := &DB{
 		opt:                     opt,
 		BPTreeKeyEntryPosMap:    make(map[string]int64),
@@ -146,11 +171,12 @@ func Open(opt Options) (*DB, error) {
 		MaxFileID:               0,
 		KeyCount:                0,
 		closed:                  false,
-		isMerging:               true,
+		isMerging:               false,
 		bucketMetas:             make(map[string]*BucketMeta),
 		ActiveCommittedTxIdsIdx: NewTree(),
 		ActiveBPTreeIdx:         NewTree(),
 		BPTreeIdx:               make(BPTreeIdx),
+		lastSyncAt:              time.Now(),
 	}
 	//判断文件夹在不在,不在就创建
 	if ok := helper.PathIsExist(db.opt.Dir); !ok {
@@ -180,12 +206,92 @@ func Open(opt Options) (*DB, error) {
 			}
 		}
 	}
+	if opt.KVSeparation.Enable {
+		valueLog, err := openValueLog(opt.Dir)
+		if err != nil {
+			return nil, err
+		}
+		db.valueLog = valueLog
+	}
 	// 构建索引
 	if err := db.buildIndexes(); err != nil {
 		return nil, fmt.Errorf("db.buildIndexes error: %s", err)
 	}
 
 	return db, nil
+}
+
+func (db *DB) Close() error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	if db.closed {
+		return ErrDBClosed
+	}
+
+	db.closed = true
+	if db.ActiveFile == nil {
+		return nil
+	}
+
+	var syncErr error
+	if db.opt.SyncEnable {
+		syncErr = db.ActiveFile.Sync()
+	}
+	closeErr := db.ActiveFile.Close()
+	var valueLogCloseErr error
+	if db.valueLog != nil {
+		if syncErr == nil && db.opt.SyncEnable {
+			syncErr = db.valueLog.Sync()
+		}
+		valueLogCloseErr = db.valueLog.Close()
+	}
+	if syncErr != nil {
+		return syncErr
+	}
+	if closeErr != nil {
+		return closeErr
+	}
+	return valueLogCloseErr
+}
+
+func (db *DB) Stats() DBStats {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	stats := DBStats{
+		DataFileCount: db.countDataFiles(),
+		ActiveFileID:  db.MaxFileID,
+		KeyCount:      db.KeyCount,
+		IsMerging:     db.isMerging,
+	}
+	if db.ActiveFile != nil {
+		stats.ActiveFileWriteOff = db.ActiveFile.writeOff
+		stats.ActiveFileActualSize = db.ActiveFile.ActualSize
+	}
+	stats.ValidKeyCount = db.countLiveKeys()
+	return stats
+}
+
+func (db *DB) countLiveKeys() int {
+	var count int
+	for _, tree := range db.BPTreeIdx {
+		records, err := tree.All()
+		if err != nil {
+			continue
+		}
+		for _, record := range records {
+			if record.H.Meta.Flag != DataDeleteFlag && !record.IsExpired() {
+				count++
+			}
+		}
+	}
+	return count
+}
+
+func (db *DB) countDataFiles() int {
+	_, dataFileIDs := db.getMaxFileIDAndFileIDs()
+	return len(dataFileIDs)
 }
 
 // buildIndexes 初始化db 根据 minidb 每种索引都应该是包含了 两步骤: 1.加载数据文件,2.加载索引
@@ -197,7 +303,7 @@ func (db *DB) buildIndexes() (err error) {
 
 	//初始化并设置活动文件
 	//根据当前最大的文件Id 获取文件名,并创建数据文件 对象
-	if db.ActiveFile, err = NewDataFile(db.opt.Dir, db.MaxFileID, db.opt.SegmentSize, db.opt.RWMode); err != nil {
+	if db.ActiveFile, err = newDataFileWithOptions(db.opt.Dir, db.MaxFileID, db.opt.SegmentSize, db.opt.RWMode, db.opt); err != nil {
 		return
 	}
 	// 如果没有数据文件，那么就直接退出
@@ -325,20 +431,34 @@ func (db *DB) Merge() error {
 		return ErrNotSupportHintBPTSparseIdxMode
 	}
 
+	db.mu.Lock()
+	if db.closed {
+		db.mu.Unlock()
+		return ErrDBClosed
+	}
+	if db.isMerging {
+		db.mu.Unlock()
+		return ErrMergeRunning
+	}
 	db.isMerging = true
+	atomic.AddUint64(&db.metrics.mergeRuns, 1)
+	db.mu.Unlock()
+	defer func() {
+		db.mu.Lock()
+		db.isMerging = false
+		db.mu.Unlock()
+	}()
 
 	_, pendingMergeFIds = db.getMaxFileIDAndFileIDs()
-
 	if len(pendingMergeFIds) < 2 {
-		db.isMerging = false
 		return errors.New("the number of files waiting to be merged is at least 2")
 	}
+	pendingMergeFIds = db.pickMergeFileIDs(pendingMergeFIds)
 
 	for _, pendingMergeFId := range pendingMergeFIds {
 		off = 0
-		f, err := NewDataFile(db.opt.Dir, int64(pendingMergeFId), db.opt.SegmentSize, db.opt.RWMode)
+		f, err := newDataFileWithOptions(db.opt.Dir, int64(pendingMergeFId), db.opt.SegmentSize, db.opt.RWMode, db.opt)
 		if err != nil {
-			db.isMerging = false
 			return err
 		}
 
@@ -349,6 +469,7 @@ func (db *DB) Merge() error {
 				if entry == nil {
 					break
 				}
+				atomic.AddUint64(&db.metrics.mergeBytesRead, uint64(entry.Size()))
 
 				var skipEntry bool
 
@@ -396,7 +517,6 @@ func (db *DB) Merge() error {
 
 		f.rwManager.Close()
 		if err := os.Remove(db.getDataPath(int64(pendingMergeFId))); err != nil {
-			db.isMerging = false
 			return fmt.Errorf("when merge err: %s", err)
 		}
 	}
@@ -424,32 +544,34 @@ func (db *DB) reWriteData(pendingMergeEntries []*Entry) error {
 	}
 	tx, err := db.Begin(true)
 	if err != nil {
-		db.isMerging = false
 		return err
 	}
 
-	dataFile, err := NewDataFile(db.opt.Dir, db.MaxFileID+1, db.opt.SegmentSize, db.opt.RWMode)
+	dataFile, err := newDataFileWithOptions(db.opt.Dir, db.MaxFileID+1, db.opt.SegmentSize, db.opt.RWMode, db.opt)
 	if err != nil {
-		db.isMerging = false
+		tx.Rollback()
 		return err
 	}
 	db.ActiveFile = dataFile
 	db.MaxFileID++
 
 	for _, e := range pendingMergeEntries {
+		atomic.AddUint64(&db.metrics.mergeBytesWritten, uint64(e.Size()))
 		err := tx.put(string(e.Meta.Bucket), e.Key, e.Value, e.Meta.TTL, e.Meta.Flag, e.Meta.Timestamp, e.Meta.Ds)
 		if err != nil {
 			tx.Rollback()
-			db.isMerging = false
 			return err
 		}
 	}
-	tx.Commit()
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
+	}
 	return nil
 }
 
 func (db *DB) getPendingMergeEntries(entry *Entry, pendingMergeEntries []*Entry) []*Entry {
-	if entry.Meta.Ds == DataStructureBPTree {
+	if isBPTreeIndexedDataStructure(entry.Meta.Ds) {
 		if r, err := db.BPTreeIdx[string(entry.Meta.Bucket)].Find(entry.Key); err == nil {
 			if r.H.Meta.Flag == DataSetFlag {
 				pendingMergeEntries = append(pendingMergeEntries, entry)
@@ -509,7 +631,7 @@ func (db *DB) buildHintIdx(dataFileIds []int) (err error) {
 			bucket := string(record.H.Meta.Bucket)
 
 			// 如果 是 BPT数据结构
-			if record.H.Meta.Ds == DataStructureBPTree {
+			if isBPTreeIndexedDataStructure(record.H.Meta.Ds) {
 				record.H.Meta.Status = Committed
 				// TODO: 当数据为 BPTree 且 EntryIdxMode 为 HintBPTSparseIdxMode 时，需要使用BPTree 进行构建
 				// 如果 是稀疏索引模式，那么 就构建
@@ -604,7 +726,7 @@ func (db *DB) parseDataFiles(dataFileIds []int) (unconfirmedRecords []*Record, c
 		// 获取DataFile 结构体
 		// 设置Truncate 数据文件大小 为 SegmentSize
 		// 设置 数据文件的 读写模型为 StartFileLoadingMode
-		f, err := NewDataFile(db.opt.Dir, int64(dataID), db.opt.SegmentSize, db.opt.StartFileLoadingMode)
+		f, err := newDataFileWithOptions(db.opt.Dir, int64(dataID), db.opt.SegmentSize, db.opt.StartFileLoadingMode, db.opt)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -616,8 +738,10 @@ func (db *DB) parseDataFiles(dataFileIds []int) (unconfirmedRecords []*Record, c
 		if err != nil {
 			return nil, nil, fmt.Errorf("when build hintIndex readAt err: %s", err)
 		}
+		atomic.AddUint64(&db.metrics.recoveryEntries, uint64(len(dataUnconfirmedRecords)))
 		unconfirmedRecords = append(unconfirmedRecords, dataUnconfirmedRecords...)
 	}
+	atomic.AddUint64(&db.metrics.recoveryCommittedTx, uint64(len(committedTxIds)))
 	return
 }
 
@@ -644,7 +768,7 @@ func (db *DB) buildBPTreeIdx(bucket string, r *Record) error {
 }
 
 // buildNotDSIdxes 当标识此处没有数据时
-//会根据 Record.H.Meta.Flag 来对对应的数据索引进行相关删除
+// 会根据 Record.H.Meta.Flag 来对对应的数据索引进行相关删除
 func (db *DB) buildNotDSIdxes(bucket string, r *Record) {
 	if r.H.Meta.Flag == DataBPTreeBucketDeleteFlag {
 		db.deleteBucket(DataStructureBPTree, bucket)
@@ -684,6 +808,12 @@ func (db *DB) managed(writable bool, fn func(tx *Tx) error) error {
 	}
 
 	return nil
+}
+
+func (db *DB) PutBatch(bucket string, items []KV, ttl uint32) error {
+	return db.Update(func(tx *Tx) error {
+		return tx.PutBatch(bucket, items, ttl)
+	})
 }
 
 // Update executes a function within a managed read/write transaction.

@@ -65,9 +65,7 @@ func SnowflakeID() uint64 {
 	id, err := snowflake.NextID()
 	if err != nil {
 		x := uuid.New()
-		x.NodeID()
-		binary.BigEndian.PutUint64(x[:], id)
-		return id
+		return binary.BigEndian.Uint64(x[:8])
 	}
 	return id
 }

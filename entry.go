@@ -114,8 +114,8 @@ func (bm *BucketMeta) Size() int64 {
 
 /*Entry*/
 
-//IsZero 检查 entry 是否为0
-//这里是否能有一个字段判断即可
+// IsZero 检查 entry 是否为0
+// 这里是否能有一个字段判断即可
 func (e *Entry) IsZero() bool {
 	if e.crc == 0 && e.Meta.KeySize == 0 && e.Meta.ValueSize == 0 && e.Meta.Timestamp == 0 {
 		return true
@@ -123,8 +123,8 @@ func (e *Entry) IsZero() bool {
 	return false
 }
 
-//GetCrc returns the crc at given buf slice.
-//返回给定buf片的CRC。
+// GetCrc returns the crc at given buf slice.
+// 返回给定buf片的CRC。
 func (e *Entry) GetCrc(buf []byte) uint32 {
 	crc := crc32.ChecksumIEEE(buf[4:])
 	crc = crc32.Update(crc, crc32.IEEETable, e.Meta.Bucket)
@@ -134,29 +134,35 @@ func (e *Entry) GetCrc(buf []byte) uint32 {
 	return crc
 }
 
-//Size entry 的数据大小
+// Size entry 的数据大小
 func (e *Entry) Size() int64 {
 	return int64(uint32(DataEntryHeaderSize) + e.Meta.KeySize + e.Meta.ValueSize + e.Meta.BucketSize)
 }
 
 // Encode returns the slice after the entry be encoded.
 //
-//  the entry stored format:
-//  |----------------------------------------------------------------------------------------------------------------|
-//  |  crc  | timestamp | ksz | valueSize | flag  | TTL  |bucketSize| status | ds   | txId |  bucket |  key  | value |
-//  |----------------------------------------------------------------------------------------------------------------|
-//  | uint32| uint64  |uint32 |  uint32 | uint16  | uint32| uint32 | uint16 | uint16 |uint64 |[]byte|[]byte | []byte |
-//  |----------------------------------------------------------------------------------------------------------------|
-//
+//	the entry stored format:
+//	|----------------------------------------------------------------------------------------------------------------|
+//	|  crc  | timestamp | ksz | valueSize | flag  | TTL  |bucketSize| status | ds   | txId |  bucket |  key  | value |
+//	|----------------------------------------------------------------------------------------------------------------|
+//	| uint32| uint64  |uint32 |  uint32 | uint16  | uint32| uint32 | uint16 | uint16 |uint64 |[]byte|[]byte | []byte |
+//	|----------------------------------------------------------------------------------------------------------------|
 func (e *Entry) Encode() []byte {
+	return e.EncodeTo(nil)
+}
+
+func (e *Entry) EncodeTo(buf []byte) []byte {
 	keySize := e.Meta.KeySize
 	valueSize := e.Meta.ValueSize
 	bucketSize := e.Meta.BucketSize
+	size := int(e.Size())
+	if cap(buf) < size {
+		buf = make([]byte, size)
+	} else {
+		buf = buf[:size]
+	}
 
-	//set DataItemHeader buf
-	buf := make([]byte, e.Size())
 	buf = e.setEntryHeaderBuf(buf)
-	//set bucket\key\value
 	copy(buf[DataEntryHeaderSize:(bucketSize+DataEntryHeaderSize)], e.Meta.Bucket)
 	copy(buf[(DataEntryHeaderSize+bucketSize):(DataEntryHeaderSize+bucketSize+keySize)], e.Key)
 	copy(buf[(DataEntryHeaderSize+bucketSize+keySize):(DataEntryHeaderSize+bucketSize+keySize+valueSize)], e.Value)

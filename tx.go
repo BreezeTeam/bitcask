@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"sync/atomic"
 	"time"
 )
 
@@ -47,6 +48,11 @@ type Tx struct {
 	writable               bool
 	pendingWrites          []*Entry
 	ReservedStoreTxIDIdxes map[int64]*BPTree
+}
+
+type KV struct {
+	Key   []byte
+	Value []byte
 }
 
 // Begin opens a new transaction.
@@ -102,108 +108,141 @@ func (tx *Tx) getTxID() uint64 {
 //
 // 5. Unlock the database and clear the db field.
 func (tx *Tx) Commit() error {
-	var (
-		off            int64
-		e              *Entry
-		bucketMetaTemp BucketMeta
-	)
-
 	if tx.db == nil {
 		return ErrDBClosed
 	}
 
 	writesLen := len(tx.pendingWrites)
-
 	if writesLen == 0 {
-		tx.unlock()
-		tx.db = nil
+		tx.close()
 		return nil
 	}
 
-	lastIndex := writesLen - 1
 	countFlag := CountFlagEnabled
 	if tx.db.isMerging {
 		countFlag = CountFlagDisabled
 	}
 
-	for i := 0; i < writesLen; i++ {
-		entry := tx.pendingWrites[i]
-		entrySize := entry.Size()
-		if entrySize > tx.db.opt.SegmentSize {
-			return ErrKeyAndValSize
-		}
+	bytesWritten, err := tx.commitEntries(countFlag)
+	if err != nil {
+		return err
+	}
+	if err := tx.syncAfterTransaction(bytesWritten); err != nil {
+		return err
+	}
+	atomic.AddUint64(&tx.db.metrics.commits, 1)
+	atomic.AddUint64(&tx.db.metrics.entriesWritten, uint64(writesLen))
+	atomic.AddUint64(&tx.db.metrics.bytesWritten, uint64(bytesWritten))
 
+	tx.close()
+	return nil
+}
+
+func (tx *Tx) close() {
+	tx.unlock()
+	tx.db = nil
+	tx.pendingWrites = nil
+	tx.ReservedStoreTxIDIdxes = nil
+}
+
+func (tx *Tx) commitEntries(countFlag bool) (int64, error) {
+	var (
+		bucketMetaTemp BucketMeta
+		encodeBuf      []byte
+		bytesWritten   int64
+	)
+	lastIndex := len(tx.pendingWrites) - 1
+
+	for i, entry := range tx.pendingWrites {
 		bucket := string(entry.Meta.Bucket)
-
-		if tx.db.ActiveFile.ActualSize+entrySize > tx.db.opt.SegmentSize {
-			if err := tx.rotateActiveFile(); err != nil {
-				return err
-			}
-		}
-
-		if entry.Meta.Ds == DataStructureBPTree {
-			tx.db.BPTreeKeyEntryPosMap[string(entry.Meta.Bucket)+string(entry.Key)] = tx.db.ActiveFile.writeOff
-		}
-
 		if i == lastIndex {
 			entry.Meta.Status = Committed
 		}
 
-		off = tx.db.ActiveFile.writeOff
-
-		if _, err := tx.db.ActiveFile.WriteAt(entry.Encode(), tx.db.ActiveFile.writeOff); err != nil {
-			return err
+		off, err := tx.appendEntry(entry, &encodeBuf)
+		if err != nil {
+			return 0, err
 		}
-
-		if tx.db.opt.SyncEnable {
-			if err := tx.db.ActiveFile.rwManager.Sync(); err != nil {
-				return err
-			}
-		}
-
-		tx.db.ActiveFile.ActualSize += entrySize
-
-		tx.db.ActiveFile.writeOff += entrySize
+		bytesWritten += entry.Size()
 
 		if tx.db.opt.EntryIdxMode == HintBPTSparseIdxMode {
 			bucketMetaTemp = tx.buildTempBucketMetaIdx(bucket, entry.Key, bucketMetaTemp)
 		}
 
-		if i == lastIndex {
-			txID := entry.Meta.TxID
-			if tx.db.opt.EntryIdxMode == HintBPTSparseIdxMode {
-				if err := tx.buildTxIDRootIdx(txID, countFlag); err != nil {
-					return err
-				}
+		if err := tx.updateIndexesForEntry(entry, bucket, off, i == lastIndex, bucketMetaTemp, countFlag); err != nil {
+			return 0, err
+		}
+	}
+	return bytesWritten, nil
+}
 
-				if err := tx.buildBucketMetaIdx(bucket, entry.Key, bucketMetaTemp); err != nil {
-					return err
-				}
-			} else {
-				tx.db.committedTxIds[txID] = struct{}{}
+func (tx *Tx) appendEntry(entry *Entry, encodeBuf *[]byte) (int64, error) {
+	if err := tx.maybeSeparateValue(entry); err != nil {
+		return 0, err
+	}
+	entrySize := entry.Size()
+	if entrySize > tx.db.opt.SegmentSize {
+		return 0, ErrKeyAndValSize
+	}
+	if tx.db.ActiveFile.ActualSize+entrySize > tx.db.opt.SegmentSize {
+		if err := tx.rotateActiveFile(); err != nil {
+			return 0, err
+		}
+	}
+	if entry.Meta.Ds == DataStructureBPTree || entry.Meta.Ds == DataStructureValuePointer {
+		tx.db.BPTreeKeyEntryPosMap[entryIndexKey(entry.Meta.Bucket, entry.Key)] = tx.db.ActiveFile.writeOff
+	}
+
+	off := tx.db.ActiveFile.writeOff
+	*encodeBuf = entry.EncodeTo(*encodeBuf)
+	if _, err := tx.db.ActiveFile.WriteAt(*encodeBuf, tx.db.ActiveFile.writeOff); err != nil {
+		return 0, err
+	}
+	tx.db.ActiveFile.ActualSize += entrySize
+	tx.db.ActiveFile.writeOff += entrySize
+	return off, nil
+}
+
+func (tx *Tx) maybeSeparateValue(entry *Entry) error {
+	opt := tx.db.opt.KVSeparation
+	if !opt.Enable || tx.db.valueLog == nil || entry.Meta.Flag != DataSetFlag || entry.Meta.Ds != DataStructureBPTree || len(entry.Value) < opt.Threshold {
+		return nil
+	}
+	ptr, err := tx.db.valueLog.Append(entry.Value)
+	if err != nil {
+		return err
+	}
+	entry.Value = encodeValuePointer(ptr)
+	entry.Meta.ValueSize = uint32(len(entry.Value))
+	entry.Meta.Ds = DataStructureValuePointer
+	return nil
+}
+
+func (tx *Tx) updateIndexesForEntry(entry *Entry, bucket string, off int64, isLast bool, bucketMetaTemp BucketMeta, countFlag bool) error {
+	if isLast {
+		txID := entry.Meta.TxID
+		if tx.db.opt.EntryIdxMode == HintBPTSparseIdxMode {
+			if err := tx.buildTxIDRootIdx(txID, countFlag); err != nil {
+				return err
 			}
-		}
-
-		e = nil
-		if tx.db.opt.EntryIdxMode == HintKeyValAndRAMIdxMode {
-			e = entry
-		}
-
-		if entry.Meta.Ds == DataStructureBPTree {
-			tx.buildBPTreeIdx(bucket, entry, e, off, countFlag)
-		}
-		if entry.Meta.Ds == DataStructureNone && entry.Meta.Flag == DataBPTreeBucketDeleteFlag {
-			tx.db.deleteBucket(DataStructureBPTree, bucket)
+			if err := tx.buildBucketMetaIdx(bucket, entry.Key, bucketMetaTemp); err != nil {
+				return err
+			}
+		} else {
+			tx.db.committedTxIds[txID] = struct{}{}
 		}
 	}
 
-	tx.unlock()
-
-	tx.db = nil
-
-	tx.pendingWrites = nil
-	tx.ReservedStoreTxIDIdxes = nil
-
+	var e *Entry
+	if tx.db.opt.EntryIdxMode == HintKeyValAndRAMIdxMode {
+		e = entry
+	}
+	if isBPTreeIndexedDataStructure(entry.Meta.Ds) {
+		tx.buildBPTreeIdx(bucket, entry, e, off, countFlag)
+	}
+	if entry.Meta.Ds == DataStructureNone && entry.Meta.Flag == DataBPTreeBucketDeleteFlag {
+		tx.db.deleteBucket(DataStructureBPTree, bucket)
+	}
 	return nil
 }
 
@@ -339,6 +378,7 @@ func (tx *Tx) buildBPTreeIdx(bucket string, entry, e *Entry, off int64, countFla
 
 // rotateActiveFile rotates log file when active file is not enough space to store the entry.
 func (tx *Tx) rotateActiveFile() error {
+	atomic.AddUint64(&tx.db.metrics.rotations, 1)
 	var err error
 	fID := tx.db.MaxFileID
 	tx.db.MaxFileID++
@@ -390,7 +430,7 @@ func (tx *Tx) rotateActiveFile() error {
 	}
 
 	// reset ActiveFile
-	tx.db.ActiveFile, err = NewDataFile(tx.db.opt.Dir, tx.db.MaxFileID, tx.db.opt.SegmentSize, tx.db.opt.RWMode)
+	tx.db.ActiveFile, err = newDataFileWithOptions(tx.db.opt.Dir, tx.db.MaxFileID, tx.db.opt.SegmentSize, tx.db.opt.RWMode, tx.db.opt)
 	if err != nil {
 		return err
 	}
@@ -441,6 +481,16 @@ func (tx *Tx) Put(bucket string, key, value []byte, ttl uint32) error {
 	return tx.put(bucket, key, value, ttl, DataSetFlag, uint64(time.Now().Unix()), DataStructureBPTree)
 }
 
+func (tx *Tx) PutBatch(bucket string, items []KV, ttl uint32) error {
+	timestamp := uint64(time.Now().Unix())
+	for _, item := range items {
+		if err := tx.put(bucket, item.Key, item.Value, ttl, DataSetFlag, timestamp, DataStructureBPTree); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (tx *Tx) checkTxIsClosed() error {
 	if tx.db == nil {
 		return ErrTxClosed
@@ -477,11 +527,11 @@ func (tx *Tx) Get(bucket string, key []byte) (e *Entry, err error) {
 			}
 
 			if idxMode == HintKeyValAndRAMIdxMode {
-				return r.E, nil
+				return tx.resolveValuePointer(r.E)
 			}
 
 			if idxMode == HintKeyAndRAMIdxMode {
-				df, err := NewDataFile(tx.db.opt.Dir, r.H.FileID, tx.db.opt.SegmentSize, tx.db.opt.RWMode)
+				df, err := newDataFileWithOptions(tx.db.opt.Dir, r.H.FileID, tx.db.opt.SegmentSize, tx.db.opt.RWMode, tx.db.opt)
 				defer df.rwManager.Close()
 
 				if err != nil {
@@ -493,7 +543,7 @@ func (tx *Tx) Get(bucket string, key []byte) (e *Entry, err error) {
 					return nil, fmt.Errorf("read err. pos %d, key %s, err %s", r.H.DataPos, string(key), err)
 				}
 
-				return item, nil
+				return tx.resolveValuePointer(item)
 			}
 		}
 	}
@@ -501,9 +551,110 @@ func (tx *Tx) Get(bucket string, key []byte) (e *Entry, err error) {
 	return nil, ErrBucketAndKey(bucket, key)
 }
 
+func (tx *Tx) Range(bucket string, start, end []byte) ([]KV, error) {
+	if err := tx.checkTxIsClosed(); err != nil {
+		return nil, err
+	}
+	if tx.db.opt.EntryIdxMode == HintBPTSparseIdxMode {
+		return nil, ErrNotSupportHintBPTSparseIdxMode
+	}
+	idx, ok := tx.db.BPTreeIdx[bucket]
+	if !ok {
+		return nil, ErrBucketAndKey(bucket, start)
+	}
+	records, err := idx.Range(start, end)
+	if err != nil {
+		return nil, err
+	}
+	return tx.visibleKVs(records)
+}
+
+func (tx *Tx) Prefix(bucket string, prefix []byte, offsetNum int, limitNum int) ([]KV, int, error) {
+	if err := tx.checkTxIsClosed(); err != nil {
+		return nil, 0, err
+	}
+	if tx.db.opt.EntryIdxMode == HintBPTSparseIdxMode {
+		return nil, 0, ErrNotSupportHintBPTSparseIdxMode
+	}
+	idx, ok := tx.db.BPTreeIdx[bucket]
+	if !ok {
+		return nil, 0, ErrBucketAndKey(bucket, prefix)
+	}
+	records, off, err := idx.PrefixScan(prefix, offsetNum, limitNum)
+	if err != nil {
+		return nil, off, err
+	}
+	kvs, err := tx.visibleKVs(records)
+	return kvs, off, err
+}
+
+func (tx *Tx) visibleKVs(records Records) ([]KV, error) {
+	kvs := make([]KV, 0, len(records))
+	for _, record := range records {
+		if _, ok := tx.db.committedTxIds[record.H.Meta.TxID]; !ok {
+			continue
+		}
+		if record.H.Meta.Flag == DataDeleteFlag || record.IsExpired() {
+			continue
+		}
+
+		entry := record.E
+		if tx.db.opt.EntryIdxMode == HintKeyAndRAMIdxMode {
+			df, err := newDataFileWithOptions(tx.db.opt.Dir, record.H.FileID, tx.db.opt.SegmentSize, tx.db.opt.RWMode, tx.db.opt)
+			if err != nil {
+				return nil, err
+			}
+			entry, err = df.ReadEntryAt(int(record.H.DataPos))
+			closeErr := df.Close()
+			if err != nil {
+				return nil, err
+			}
+			if closeErr != nil {
+				return nil, closeErr
+			}
+		}
+		if entry == nil {
+			continue
+		}
+		entry, err := tx.resolveValuePointer(entry)
+		if err != nil {
+			return nil, err
+		}
+		kvs = append(kvs, KV{
+			Key:   append([]byte(nil), record.H.Key...),
+			Value: append([]byte(nil), entry.Value...),
+		})
+	}
+	return kvs, nil
+}
+
 // ErrBucketAndKey returns when bucket or key not found.
 func ErrBucketAndKey(bucket string, key []byte) error {
 	return fmt.Errorf("%w:bucket:%s,key:%s", ErrBucketNotFound, bucket, key)
+}
+
+func (tx *Tx) resolveValuePointer(entry *Entry) (*Entry, error) {
+	if entry == nil || entry.Meta.Ds != DataStructureValuePointer {
+		return entry, nil
+	}
+	if tx.db.valueLog == nil {
+		return nil, ErrValuePointer
+	}
+	ptr, err := decodeValuePointer(entry.Value)
+	if err != nil {
+		return nil, err
+	}
+	value, err := tx.db.valueLog.Read(ptr)
+	if err != nil {
+		return nil, err
+	}
+	resolved := *entry
+	resolved.Value = value
+	meta := *entry.Meta
+	meta.ValueSize = uint32(len(value))
+	meta.Ds = DataStructureBPTree
+	resolved.Meta = &meta
+	return &resolved, nil
 }
 
 // put sets the value for a key in the bucket.
@@ -521,7 +672,13 @@ func (tx *Tx) put(bucket string, key, value []byte, ttl uint32, flag uint16, tim
 		return ErrKeyEmpty
 	}
 
-	tx.pendingWrites = append(tx.pendingWrites, &Entry{
+	tx.pendingWrites = append(tx.pendingWrites, newPendingEntry(bucket, key, value, ttl, flag, timestamp, ds, tx.id))
+
+	return nil
+}
+
+func newPendingEntry(bucket string, key, value []byte, ttl uint32, flag uint16, timestamp uint64, ds uint16, txID uint64) *Entry {
+	return &Entry{
 		Key:   key,
 		Value: value,
 		Meta: &MetaData{
@@ -534,11 +691,17 @@ func (tx *Tx) put(bucket string, key, value []byte, ttl uint32, flag uint16, tim
 			BucketSize: uint32(len(bucket)),
 			Status:     UnCommitted,
 			Ds:         ds,
-			TxID:       tx.id,
+			TxID:       txID,
 		},
-	})
+	}
+}
 
-	return nil
+func entryIndexKey(bucket, key []byte) string {
+	return string(bucket) + string(key)
+}
+
+func isBPTreeIndexedDataStructure(ds uint16) bool {
+	return ds == DataStructureBPTree || ds == DataStructureValuePointer
 }
 
 func (tx *Tx) getByHintBPTSparseIdx(bucket string, key []byte) (e *Entry, err error) {
@@ -565,7 +728,7 @@ func (tx *Tx) getByHintBPTSparseIdxInMem(key []byte) (e *Entry, err error) {
 	r, err := tx.db.ActiveBPTreeIdx.Find(key)
 	if err == nil && r != nil {
 		if _, err := tx.db.ActiveCommittedTxIdsIdx.Find([]byte(helper.Int64ToStr(int64(r.H.Meta.TxID)))); err == nil {
-			df, err := NewDataFile(tx.db.opt.Dir, r.H.FileID, tx.db.opt.SegmentSize, tx.db.opt.RWMode)
+			df, err := newDataFileWithOptions(tx.db.opt.Dir, r.H.FileID, tx.db.opt.SegmentSize, tx.db.opt.RWMode, tx.db.opt)
 			defer df.rwManager.Close()
 			if err != nil {
 				return nil, err
@@ -594,7 +757,7 @@ func (tx *Tx) FindLeafOnDisk(fID int64, rootOff int64, key, newKey []byte) (bn *
 	for curr.IsLeaf != 1 {
 		i = 0
 		for i < curr.KeysNum {
-			df, err := NewDataFile(tx.db.opt.Dir, fID, tx.db.opt.SegmentSize, tx.db.opt.RWMode)
+			df, err := newDataFileWithOptions(tx.db.opt.Dir, fID, tx.db.opt.SegmentSize, tx.db.opt.RWMode, tx.db.opt)
 			if err != nil {
 				return nil, err
 			}
@@ -636,7 +799,7 @@ func (tx *Tx) FindOnDisk(fID uint64, rootOff uint64, key, newKey []byte) (entry 
 	}
 
 	for i = 0; i < bnLeaf.KeysNum; i++ {
-		df, err = NewDataFile(tx.db.opt.Dir, int64(fID), tx.db.opt.SegmentSize, tx.db.opt.RWMode)
+		df, err = newDataFileWithOptions(tx.db.opt.Dir, int64(fID), tx.db.opt.SegmentSize, tx.db.opt.RWMode, tx.db.opt)
 		if err != nil {
 			return nil, err
 		}

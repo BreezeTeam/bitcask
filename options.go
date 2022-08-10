@@ -1,8 +1,15 @@
 package bitcask
 
-import "bitcask/rwmanager"
+import (
+	"bitcask/rwmanager"
+	"time"
+)
 
 type EntryIdxMode int // 条目索引模式
+
+type SyncPolicyMode int
+
+type CompactionPolicyMode int
 
 const (
 	// HintKeyValAndRAMIdxMode ram key value
@@ -15,6 +22,52 @@ const (
 	HintBPTSparseIdxMode
 )
 
+const (
+	SyncPolicyDefault SyncPolicyMode = iota
+	SyncPolicyNone
+	SyncPolicyEveryCommit
+	SyncPolicyGroupCommit
+	SyncPolicyAdaptive
+)
+
+const (
+	CompactionByFileID CompactionPolicyMode = iota
+	CompactionByGarbageRatio
+	CompactionHotCold
+)
+
+type SyncPolicyOptions struct {
+	Mode              SyncPolicyMode
+	GroupMaxDelay     time.Duration
+	GroupMaxWrites    int
+	DirtyBytesLimit   int64
+	AdaptiveMinDelay  time.Duration
+	AdaptiveMaxDelay  time.Duration
+	TargetSyncLatency time.Duration
+}
+
+type CompactionOptions struct {
+	Mode               CompactionPolicyMode
+	MinGarbageRatio    float64
+	HotKeySampleWindow int
+	ColdAgeThreshold   time.Duration
+}
+
+type KVSeparationOptions struct {
+	Enable              bool
+	Threshold           int
+	ValueLogSegmentSize int64
+}
+
+type FaultInjectionOptions struct {
+	Enable            bool
+	WriteFailAfter    int64
+	SyncFailAfter     int64
+	ShortWriteAfter   int64
+	CorruptAfterWrite bool
+	ReadCorruptAfter  int64
+}
+
 // Options 配置 结构体
 type Options struct {
 	Dir                  string
@@ -25,12 +78,18 @@ type Options struct {
 	// SyncEnable represents if call Sync() function.
 	// if SyncEnable is false, high write performance but potential data loss likely.
 	// if SyncEnable is true, slower but persistent.
-	SyncEnable bool
-	NodeNum    int64
+	SyncEnable     bool
+	SyncPolicy     SyncPolicyOptions
+	Compaction     CompactionOptions
+	KVSeparation   KVSeparationOptions
+	FaultInjection FaultInjectionOptions
+	NodeNum        int64
+
+	faultState *faultInjectionState
 }
 
 // defaultSegmentSize 8 mb 的默认写入大小
-//var defaultSegmentSize int64 = 0.5 * 1024 * 1024
+// var defaultSegmentSize int64 = 0.5 * 1024 * 1024
 var defaultSegmentSize int64 = 100
 
 // DefaultOptions represents the default options.
@@ -38,4 +97,10 @@ var DefaultOptions = Options{
 	SegmentSize:  defaultSegmentSize,
 	RWMode:       rwmanager.FileIO,        //默认为标准文件io
 	EntryIdxMode: HintKeyValAndRAMIdxMode, // B+ 树稀疏索引
+	FaultInjection: FaultInjectionOptions{
+		WriteFailAfter:   -1,
+		SyncFailAfter:    -1,
+		ShortWriteAfter:  -1,
+		ReadCorruptAfter: -1,
+	},
 }

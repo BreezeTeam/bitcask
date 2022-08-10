@@ -42,6 +42,10 @@ type DataFile struct {
 // capacity 数据文件 容量大小，一般是段大小
 // rwMode io 模型，读取和写入可以设置不同的索引模型
 func NewDataFile(dir string, fileID int64, capacity int64, rwMode rwmanager.RWMode) (df *DataFile, err error) {
+	return newDataFileWithOptions(dir, fileID, capacity, rwMode, Options{})
+}
+
+func newDataFileWithOptions(dir string, fileID int64, capacity int64, rwMode rwmanager.RWMode, opt Options) (df *DataFile, err error) {
 	var rwManager rwmanager.RWManager
 	// 获取数据文件路径
 	path := getDataFilePath(dir, fileID)
@@ -56,6 +60,7 @@ func NewDataFile(dir string, fileID int64, capacity int64, rwMode rwmanager.RWMo
 		if err != nil {
 			return nil, err
 		}
+		rwManager = newFaultRWManager(rwManager, opt.FaultInjection, opt.faultState)
 	} else {
 		return nil, ErrRWMode
 	}
@@ -80,6 +85,10 @@ func (df *DataFile) WriteAt(b []byte, off int64) (n int, err error) {
 // of recently written data to disk.
 func (df *DataFile) Sync() (err error) {
 	return df.rwManager.Sync()
+}
+
+func (df *DataFile) Close() (err error) {
+	return df.rwManager.Close()
 }
 
 // getDataFilePath 根据文件id 拼接得到数据文件路径
@@ -161,7 +170,9 @@ func (df *DataFile) ParseData(fID int64, off int64,
 	)
 	// 读取结束自动退出
 	defer func(rwManager rwmanager.RWManager) {
-		err = rwManager.Close()
+		if closeErr := rwManager.Close(); err == nil {
+			err = closeErr
+		}
 	}(df.rwManager)
 
 	for {
@@ -224,11 +235,11 @@ func (df *DataFile) ParseData(fID int64, off int64,
 }
 
 // getActiveFileWriteOff
-//对应 minidb.db.loadIndexesFromFile
-//1.从文件中加载索引
-//2.获取 活动文件的实际文件大小和写入偏移量,
-//minidb 在这里建立了索引(因为 minidb 是单文件简化 bitcask模型)
-//nustdb 只是读取了所有的entry，并更新了ActualSize  活动文件的实际大小
+// 对应 minidb.db.loadIndexesFromFile
+// 1.从文件中加载索引
+// 2.获取 活动文件的实际文件大小和写入偏移量,
+// minidb 在这里建立了索引(因为 minidb 是单文件简化 bitcask模型)
+// nustdb 只是读取了所有的entry，并更新了ActualSize  活动文件的实际大小
 func (df *DataFile) setActiveFileWriteOff() (err error) {
 	off := int64(0)
 	for {
