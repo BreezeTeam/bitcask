@@ -1,7 +1,7 @@
 package example
 
 import (
-	"bitcask"
+	"github.com/BreezeTeam/bitcask/engine"
 	"encoding/json"
 	"errors"
 	"fmt"

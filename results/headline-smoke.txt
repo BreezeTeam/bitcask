@@ -1,0 +1,105 @@
+goos: darwin
+goarch: arm64
+pkg: bitcask
+cpu: Apple M3 Max
+BenchmarkAutonomousObservationOverhead/enabled=false-14         	   15516	     39159 ns/op	     826 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=false-14         	   15600	     39024 ns/op	     825 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=false-14         	   15289	     39055 ns/op	     829 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=true-14          	   15349	     40954 ns/op	     828 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=true-14          	   15476	     38855 ns/op	     827 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=true-14          	   15452	     38882 ns/op	     827 B/op	      15 allocs/op
+BenchmarkCompactionForegroundImpact/no-merge-14                 	   15058	     38778 ns/op	      2041 p50-ns	    152417 p99-ns	         0 rewrite-B	    1139 B/op	      16 allocs/op
+BenchmarkCompactionForegroundImpact/no-merge-14                 	   15543	     39211 ns/op	      3375 p50-ns	    294167 p99-ns	         0 rewrite-B	    1132 B/op	      16 allocs/op
+BenchmarkCompactionForegroundImpact/no-merge-14                 	   15354	     39249 ns/op	      2917 p50-ns	    246333 p99-ns	         0 rewrite-B	    1135 B/op	      16 allocs/op
+BenchmarkCompactionForegroundImpact/static-merge-14             	      69	   7626404 ns/op	      3417 p50-ns	    722625 p99-ns	     18473 rewrite-B	    4263 B/op	      64 allocs/op
+BenchmarkCompactionForegroundImpact/static-merge-14             	     105	   4846600 ns/op	      4875 p50-ns	    414000 p99-ns	     21983 rewrite-B	    3318 B/op	      50 allocs/op
+BenchmarkCompactionForegroundImpact/static-merge-14             	     112	   4570523 ns/op	      5250 p50-ns	    438709 p99-ns	     22763 rewrite-B	    3210 B/op	      49 allocs/op
+BenchmarkCompactionForegroundImpact/budgeted-merge-14           	   10658	     47471 ns/op	      3459 p50-ns	    304042 p99-ns	         0 rewrite-B	    1399 B/op	      19 allocs/op
+BenchmarkCompactionForegroundImpact/budgeted-merge-14           	   12566	     47561 ns/op	      3916 p50-ns	    506917 p99-ns	         0 rewrite-B	    1368 B/op	      19 allocs/op
+BenchmarkCompactionForegroundImpact/budgeted-merge-14           	   12548	     45969 ns/op	      3375 p50-ns	    355500 p99-ns	         0 rewrite-B	    1368 B/op	      19 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=none/writers=1-14      	   15312	     38760 ns/op	      6292 p50-ns	     92291 p99-ns	         0 syncs/commit	     828 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=none/writers=1-14      	   15397	     38893 ns/op	     11125 p50-ns	    112666 p99-ns	         0 syncs/commit	     824 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=none/writers=1-14      	   15486	     38836 ns/op	      4542 p50-ns	     80458 p99-ns	         0 syncs/commit	     827 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=none/writers=4-14      	   15374	     39080 ns/op	     12875 p50-ns	   5253042 p99-ns	         0 syncs/commit	     807 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=none/writers=4-14      	   15387	     38943 ns/op	      4583 p50-ns	   8601000 p99-ns	         0 syncs/commit	     805 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=none/writers=4-14      	   15378	     38727 ns/op	     14375 p50-ns	   4660542 p99-ns	         0 syncs/commit	     808 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=none/writers=16-14     	   15087	     38690 ns/op	      3708 p50-ns	   9438666 p99-ns	         0 syncs/commit	     804 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=none/writers=16-14     	   15052	     38784 ns/op	     17333 p50-ns	   7459750 p99-ns	         0 syncs/commit	     806 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=none/writers=16-14     	   15537	     39049 ns/op	      3417 p50-ns	   9468167 p99-ns	         0 syncs/commit	     799 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=every/writers=1-14     	     135	   4522275 ns/op	   4731125 p50-ns	   5347208 p99-ns	         1.000 syncs/commit	     797 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=every/writers=1-14     	     140	   4700429 ns/op	   4926334 p50-ns	   5524708 p99-ns	         1.000 syncs/commit	     795 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=every/writers=1-14     	     124	   4918629 ns/op	   4896542 p50-ns	   7264958 p99-ns	         1.000 syncs/commit	     815 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=every/writers=4-14     	     129	   4644702 ns/op	  18889166 p50-ns	  20740333 p99-ns	         1.000 syncs/commit	     807 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=every/writers=4-14     	     128	   4287814 ns/op	  16927042 p50-ns	  20460792 p99-ns	         1.000 syncs/commit	     828 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=every/writers=4-14     	     128	   4605290 ns/op	  18125459 p50-ns	  25263250 p99-ns	         1.000 syncs/commit	     846 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=every/writers=16-14    	     144	   4226632 ns/op	  66896667 p50-ns	  74951875 p99-ns	         1.000 syncs/commit	     808 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=every/writers=16-14    	     135	   4369224 ns/op	  69204875 p50-ns	  76000292 p99-ns	         1.000 syncs/commit	     856 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=every/writers=16-14    	     146	   4108267 ns/op	  64969708 p50-ns	  69097333 p99-ns	         1.000 syncs/commit	     853 B/op	      15 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=group/writers=1-14     	     132	   4508063 ns/op	   4719958 p50-ns	   5169541 p99-ns	         1.000 syncs/commit	    1098 B/op	      22 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=group/writers=1-14     	     129	   4407537 ns/op	   4105333 p50-ns	   5699000 p99-ns	         1.000 syncs/commit	    1102 B/op	      22 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=group/writers=1-14     	     127	   4367100 ns/op	   4064250 p50-ns	   6031542 p99-ns	         1.000 syncs/commit	    1103 B/op	      22 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=group/writers=4-14     	     584	   1088206 ns/op	   4062875 p50-ns	   8257500 p99-ns	         0.2500 syncs/commit	     985 B/op	      20 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=group/writers=4-14     	     536	   1215624 ns/op	   4802959 p50-ns	   8890375 p99-ns	         0.2519 syncs/commit	    1000 B/op	      20 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=group/writers=4-14     	     553	   1150473 ns/op	   4133792 p50-ns	   7038542 p99-ns	         0.2514 syncs/commit	     994 B/op	      20 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=group/writers=16-14    	    1812	    300595 ns/op	   4858417 p50-ns	   8077458 p99-ns	         0.06347 syncs/commit	     998 B/op	      19 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=group/writers=16-14    	    1924	    308740 ns/op	   4917625 p50-ns	  11521625 p99-ns	         0.06289 syncs/commit	     991 B/op	      19 allocs/op
+BenchmarkConcurrentCommitPolicies/policy=group/writers=16-14    	    1870	    325428 ns/op	   4976041 p50-ns	  10899833 p99-ns	         0.06364 syncs/commit	     991 B/op	      19 allocs/op
+BenchmarkGroupCommitSubprocessRecovery-14                       	      38	  19486713 ns/op	   29056 B/op	     290 allocs/op
+BenchmarkGroupCommitSubprocessRecovery-14                       	      28	  19555625 ns/op	   29056 B/op	     290 allocs/op
+BenchmarkGroupCommitSubprocessRecovery-14                       	      43	  19608651 ns/op	   29056 B/op	     290 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=false-14     	   15357	     38931 ns/op	     804 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=false-14     	   15530	     39137 ns/op	     802 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=false-14     	   15669	     39067 ns/op	     800 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=true-14      	     134	   4177506 ns/op	     773 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=true-14      	     139	   4165371 ns/op	     768 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=true-14      	     139	   4172339 ns/op	     768 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=false-14     	   15418	     38876 ns/op	   0.21 MB/s	     827 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=false-14     	   15220	     38467 ns/op	   0.21 MB/s	     829 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=false-14     	   15544	     39143 ns/op	   0.20 MB/s	     825 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=true-14      	     129	   4718286 ns/op	   0.00 MB/s	     807 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=true-14      	     138	   4173437 ns/op	   0.00 MB/s	     794 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=true-14      	     146	   4442709 ns/op	   0.00 MB/s	     784 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=false-14    	   15686	     38902 ns/op	   0.41 MB/s	     832 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=false-14    	   15498	     38793 ns/op	   0.41 MB/s	     834 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=false-14    	   15321	     39285 ns/op	   0.41 MB/s	     836 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=true-14     	     134	   4400880 ns/op	   0.00 MB/s	     807 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=true-14     	     130	   4636220 ns/op	   0.00 MB/s	     811 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=true-14     	     134	   4186511 ns/op	   0.00 MB/s	     805 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=false-14    	   15379	     38951 ns/op	   0.82 MB/s	     867 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=false-14    	   15054	     39334 ns/op	   0.81 MB/s	     872 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=false-14    	   15352	     38856 ns/op	   0.82 MB/s	     868 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=true-14     	     140	   4451699 ns/op	   0.01 MB/s	     833 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=true-14     	     129	   4864046 ns/op	   0.01 MB/s	     845 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=true-14     	     132	   4950454 ns/op	   0.01 MB/s	     841 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=false-14  	   15390	     38643 ns/op	  26.50 MB/s	    2916 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=false-14  	   15205	     39643 ns/op	  25.83 MB/s	    2918 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=false-14  	   15458	     39163 ns/op	  26.15 MB/s	    2915 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=true-14   	     117	   4719455 ns/op	   0.22 MB/s	    2914 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=true-14   	     130	   4361236 ns/op	   0.23 MB/s	    2891 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=true-14   	     135	   4603165 ns/op	   0.22 MB/s	    2883 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=false-14 	   15450	     39507 ns/op	 414.71 MB/s	   35556 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=false-14 	   15547	     38661 ns/op	 423.78 MB/s	   35555 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=false-14 	   15358	     41138 ns/op	 398.27 MB/s	   35557 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=true-14  	     100	   5402055 ns/op	   3.03 MB/s	   35497 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=true-14  	     112	   4987324 ns/op	   3.29 MB/s	   35479 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=true-14  	     123	   5170424 ns/op	   3.17 MB/s	   35561 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=512B-14              	   15442	     38777 ns/op	  13.20 MB/s	    1827 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=512B-14              	   15198	     38352 ns/op	  13.35 MB/s	    1830 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=512B-14              	   15398	     38850 ns/op	  13.18 MB/s	    1827 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=4096B-14             	   15601	     38754 ns/op	 105.69 MB/s	    9698 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=4096B-14             	   14979	     38453 ns/op	 106.52 MB/s	    9695 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=4096B-14             	   15372	     38681 ns/op	 105.89 MB/s	    9700 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=65536B-14            	   15336	     38638 ns/op	1696.16 MB/s	  140006 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=65536B-14            	   14128	     38888 ns/op	1685.24 MB/s	  139938 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=65536B-14            	   15346	     38763 ns/op	1690.66 MB/s	  140006 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=512B-14               	   15651	     38969 ns/op	  13.14 MB/s	    1824 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=512B-14               	   14624	     38796 ns/op	  13.20 MB/s	    1819 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=512B-14               	   15387	     38850 ns/op	  13.18 MB/s	    1828 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=4096B-14              	   15607	     38881 ns/op	 105.35 MB/s	    4963 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=4096B-14              	   15374	     38852 ns/op	 105.43 MB/s	    4966 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=4096B-14              	   15612	     38861 ns/op	 105.40 MB/s	    4963 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=65536B-14             	   15420	     39016 ns/op	1679.73 MB/s	   66440 B/op	      17 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=65536B-14             	   15488	     38928 ns/op	1683.54 MB/s	   66440 B/op	      17 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=65536B-14             	   15501	     38767 ns/op	1690.52 MB/s	   66439 B/op	      17 allocs/op
+PASS
+ok  	bitcask	116.501s

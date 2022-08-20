@@ -1,0 +1,76 @@
+goos: darwin
+goarch: arm64
+pkg: bitcask
+cpu: Apple M3 Max
+BenchmarkSegmentedValueLogAppendRead/segment=0-14         	   10000	    107608 ns/op	  38.06 MB/s	    4096 B/op	       1 allocs/op
+BenchmarkSegmentedValueLogAppendRead/segment=0-14         	   14740	     81043 ns/op	  50.54 MB/s	    4096 B/op	       1 allocs/op
+BenchmarkSegmentedValueLogAppendRead/segment=0-14         	  187890	      7010 ns/op	 584.33 MB/s	    4096 B/op	       1 allocs/op
+BenchmarkSegmentedValueLogAppendRead/segment=0-14         	  159794	      6912 ns/op	 592.63 MB/s	    4096 B/op	       1 allocs/op
+BenchmarkSegmentedValueLogAppendRead/segment=0-14         	  154198	      7100 ns/op	 576.87 MB/s	    4096 B/op	       1 allocs/op
+BenchmarkSegmentedValueLogAppendRead/segment=65536-14     	   71288	     17450 ns/op	 234.72 MB/s	    4140 B/op	       1 allocs/op
+BenchmarkSegmentedValueLogAppendRead/segment=65536-14     	   95061	     14696 ns/op	 278.71 MB/s	    4137 B/op	       1 allocs/op
+BenchmarkSegmentedValueLogAppendRead/segment=65536-14     	   68780	     17222 ns/op	 237.84 MB/s	    4141 B/op	       1 allocs/op
+BenchmarkSegmentedValueLogAppendRead/segment=65536-14     	   82485	     16183 ns/op	 253.10 MB/s	    4139 B/op	       1 allocs/op
+BenchmarkSegmentedValueLogAppendRead/segment=65536-14     	   87591	     15515 ns/op	 264.00 MB/s	    4137 B/op	       1 allocs/op
+BenchmarkLifecyclePlacementPut/lifecycle=false-14         	   30225	     40681 ns/op	    1891 B/op	      16 allocs/op
+BenchmarkLifecyclePlacementPut/lifecycle=false-14         	   30802	     38935 ns/op	    1892 B/op	      16 allocs/op
+BenchmarkLifecyclePlacementPut/lifecycle=false-14         	   30854	     39853 ns/op	    1891 B/op	      16 allocs/op
+BenchmarkLifecyclePlacementPut/lifecycle=false-14         	   31132	     39114 ns/op	    1890 B/op	      16 allocs/op
+BenchmarkLifecyclePlacementPut/lifecycle=false-14         	   31078	     39202 ns/op	    1890 B/op	      16 allocs/op
+BenchmarkLifecyclePlacementPut/lifecycle=true-14          	   27524	     39125 ns/op	    1933 B/op	      18 allocs/op
+BenchmarkLifecyclePlacementPut/lifecycle=true-14          	   16688	     77907 ns/op	    2038 B/op	      18 allocs/op
+BenchmarkLifecyclePlacementPut/lifecycle=true-14          	   15969	    187660 ns/op	    2050 B/op	      18 allocs/op
+BenchmarkLifecyclePlacementPut/lifecycle=true-14          	    3117	    342987 ns/op	    1945 B/op	      18 allocs/op
+BenchmarkLifecyclePlacementPut/lifecycle=true-14          	    2746	    378731 ns/op	    1969 B/op	      18 allocs/op
+BenchmarkValueLogGC-14                                    	       7	 144251571 ns/op	     32768 live-B	     65536 reclaimed-B	   77416 B/op	     506 allocs/op
+BenchmarkValueLogGC-14                                    	       7	 172913125 ns/op	     32768 live-B	     65536 reclaimed-B	   77416 B/op	     506 allocs/op
+BenchmarkValueLogGC-14                                    	       6	 190973875 ns/op	     32768 live-B	     65536 reclaimed-B	   77416 B/op	     506 allocs/op
+BenchmarkValueLogGC-14                                    	       8	 131619302 ns/op	     32768 live-B	     65536 reclaimed-B	   77416 B/op	     506 allocs/op
+BenchmarkValueLogGC-14                                    	       9	 129765417 ns/op	     32768 live-B	     65536 reclaimed-B	   77416 B/op	     506 allocs/op
+BenchmarkValueLogStatsCore-14                             	   18730	     56016 ns/op	  151080 B/op	      55 allocs/op
+BenchmarkValueLogStatsCore-14                             	   21358	     56027 ns/op	  151080 B/op	      55 allocs/op
+BenchmarkValueLogStatsCore-14                             	   21434	     56252 ns/op	  151080 B/op	      55 allocs/op
+BenchmarkValueLogStatsCore-14                             	   20101	     57176 ns/op	  151080 B/op	      55 allocs/op
+BenchmarkValueLogStatsCore-14                             	   20840	     58407 ns/op	  151080 B/op	      55 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=512B-14        	   30531	     54857 ns/op	   9.33 MB/s	    1829 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=512B-14        	   28208	     46742 ns/op	  10.95 MB/s	    1758 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=512B-14        	   27890	     56493 ns/op	   9.06 MB/s	    1750 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=512B-14        	   10000	    183463 ns/op	   2.79 MB/s	    1784 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=512B-14        	   10000	    188031 ns/op	   2.72 MB/s	    1784 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=4096B-14       	    2342	    684024 ns/op	   5.99 MB/s	    9669 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=4096B-14       	    1792	    858383 ns/op	   4.77 MB/s	    9666 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=4096B-14       	   10826	    721550 ns/op	   5.68 MB/s	    9646 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=4096B-14       	    1956	    761876 ns/op	   5.38 MB/s	    9701 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=4096B-14       	    1764	    572802 ns/op	   7.15 MB/s	    9648 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=65536B-14      	     679	   1804062 ns/op	  36.33 MB/s	  139972 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=65536B-14      	     664	   2131979 ns/op	  30.74 MB/s	  139974 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=65536B-14      	     630	   1882589 ns/op	  34.81 MB/s	  139985 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=65536B-14      	     802	   1570755 ns/op	  41.72 MB/s	  139949 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=false/value=65536B-14      	     742	   2094554 ns/op	  31.29 MB/s	  139960 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=512B-14         	   10000	    164686 ns/op	   3.11 MB/s	    1784 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=512B-14         	   10000	    173919 ns/op	   2.94 MB/s	    1784 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=512B-14         	   10000	    166562 ns/op	   3.07 MB/s	    1784 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=512B-14         	    8194	    171304 ns/op	   2.99 MB/s	    1816 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=512B-14         	    9363	    122076 ns/op	   4.19 MB/s	    1794 B/op	      15 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=4096B-14        	    2372	    536168 ns/op	   7.64 MB/s	    4931 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=4096B-14        	    1336	    753991 ns/op	   5.43 MB/s	    4913 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=4096B-14        	    1992	    590495 ns/op	   6.94 MB/s	    4959 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=4096B-14        	    1632	    620711 ns/op	   6.60 MB/s	    4887 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=4096B-14        	    8500	    426648 ns/op	   9.60 MB/s	    4949 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=65536B-14       	    1795	   1028314 ns/op	  63.73 MB/s	   66416 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=65536B-14       	    1622	    933900 ns/op	  70.17 MB/s	   66378 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=65536B-14       	    1594	    827513 ns/op	  79.20 MB/s	   66373 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=65536B-14       	    1965	    790947 ns/op	  82.86 MB/s	   66453 B/op	      16 allocs/op
+BenchmarkKVSeparationPut/kvsep=true/value=65536B-14       	    1251	    913702 ns/op	  71.73 MB/s	   66408 B/op	      16 allocs/op
+BenchmarkKVSeparationGet/kvsep=false-14                   	   30860	     39454 ns/op	 103.82 MB/s	     128 B/op	       4 allocs/op
+BenchmarkKVSeparationGet/kvsep=false-14                   	   30638	     38671 ns/op	 105.92 MB/s	     128 B/op	       4 allocs/op
+BenchmarkKVSeparationGet/kvsep=false-14                   	   31370	     38827 ns/op	 105.49 MB/s	     128 B/op	       4 allocs/op
+BenchmarkKVSeparationGet/kvsep=false-14                   	   31473	     38708 ns/op	 105.82 MB/s	     128 B/op	       4 allocs/op
+BenchmarkKVSeparationGet/kvsep=false-14                   	   30913	     38710 ns/op	 105.81 MB/s	     128 B/op	       4 allocs/op
+BenchmarkKVSeparationGet/kvsep=true-14                    	   30796	     39297 ns/op	 104.23 MB/s	    4384 B/op	       7 allocs/op
+BenchmarkKVSeparationGet/kvsep=true-14                    	   30622	     38979 ns/op	 105.08 MB/s	    4384 B/op	       7 allocs/op
+BenchmarkKVSeparationGet/kvsep=true-14                    	   30628	     38999 ns/op	 105.03 MB/s	    4384 B/op	       7 allocs/op
+BenchmarkKVSeparationGet/kvsep=true-14                    	   30262	     39078 ns/op	 104.82 MB/s	    4384 B/op	       7 allocs/op
+BenchmarkKVSeparationGet/kvsep=true-14                    	   29965	     39418 ns/op	 103.91 MB/s	    4384 B/op	       7 allocs/op
+PASS
+ok  	bitcask	220.112s

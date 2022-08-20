@@ -1,0 +1,42 @@
+goos: darwin
+goarch: arm64
+pkg: bitcask
+cpu: Apple M3 Max
+BenchmarkRecoveryTornCommitMarkers-14          	    1318	    843859 ns/op	    6548 B/op	      64 allocs/op
+BenchmarkRecoveryTornCommitMarkers-14          	    9094	    125858 ns/op	    6573 B/op	      64 allocs/op
+BenchmarkRecoveryTornCommitMarkers-14          	   10000	    129236 ns/op	    6556 B/op	      64 allocs/op
+BenchmarkRecoveryTornCommitMarkers-14          	    8722	    139623 ns/op	    6572 B/op	      64 allocs/op
+BenchmarkRecoveryTornCommitMarkers-14          	    9714	    109197 ns/op	    6572 B/op	      64 allocs/op
+BenchmarkRecoveryManyPartialTransactions-14    	     171	   7027457 ns/op	 1649598 B/op	   36938 allocs/op
+BenchmarkRecoveryManyPartialTransactions-14    	     169	   7056918 ns/op	 1649596 B/op	   36938 allocs/op
+BenchmarkRecoveryManyPartialTransactions-14    	     172	   7012626 ns/op	 1649599 B/op	   36938 allocs/op
+BenchmarkRecoveryManyPartialTransactions-14    	     172	   6961288 ns/op	 1649595 B/op	   36938 allocs/op
+BenchmarkRecoveryManyPartialTransactions-14    	     171	   7302104 ns/op	 1649593 B/op	   36938 allocs/op
+BenchmarkGroupCommitSubprocessRecovery-14      	      39	  34011828 ns/op	   29664 B/op	     290 allocs/op
+BenchmarkGroupCommitSubprocessRecovery-14      	      30	  33532290 ns/op	   29664 B/op	     290 allocs/op
+BenchmarkGroupCommitSubprocessRecovery-14      	      38	  38231651 ns/op	   29664 B/op	     290 allocs/op
+BenchmarkGroupCommitSubprocessRecovery-14      	      32	  36938783 ns/op	   29664 B/op	     290 allocs/op
+BenchmarkGroupCommitSubprocessRecovery-14      	      36	  37233683 ns/op	   29664 B/op	     290 allocs/op
+BenchmarkSubprocessCrashRecovery-14            	      57	  26659987 ns/op	   20376 B/op	     102 allocs/op
+BenchmarkSubprocessCrashRecovery-14            	      40	  29362919 ns/op	   20376 B/op	     102 allocs/op
+BenchmarkSubprocessCrashRecovery-14            	      45	  25787557 ns/op	   20376 B/op	     102 allocs/op
+BenchmarkSubprocessCrashRecovery-14            	      86	  27332444 ns/op	   20376 B/op	     102 allocs/op
+BenchmarkSubprocessCrashRecovery-14            	      44	  28230893 ns/op	   20376 B/op	     102 allocs/op
+PASS
+ok  	bitcask	65.408s
+goos: darwin
+goarch: arm64
+pkg: bitcask/experiments/fault
+cpu: Apple M3 Max
+BenchmarkCrashScenarioReplay-14       	   14155	     83547 ns/op	  288009 B/op	      26 allocs/op
+BenchmarkCrashScenarioReplay-14       	   14334	     83728 ns/op	  288007 B/op	      26 allocs/op
+BenchmarkCrashScenarioReplay-14       	   14520	     83467 ns/op	  288007 B/op	      26 allocs/op
+BenchmarkCrashScenarioReplay-14       	   13630	     88470 ns/op	  288005 B/op	      26 allocs/op
+BenchmarkCrashScenarioReplay-14       	   14194	     83763 ns/op	  288007 B/op	      26 allocs/op
+BenchmarkCrashScenarioEnumerate-14    	  726045	      1713 ns/op	    2665 B/op	      57 allocs/op
+BenchmarkCrashScenarioEnumerate-14    	  716628	      1661 ns/op	    2665 B/op	      57 allocs/op
+BenchmarkCrashScenarioEnumerate-14    	  747835	      1692 ns/op	    2665 B/op	      57 allocs/op
+BenchmarkCrashScenarioEnumerate-14    	  698383	      1702 ns/op	    2665 B/op	      57 allocs/op
+BenchmarkCrashScenarioEnumerate-14    	  730357	      1685 ns/op	    2665 B/op	      57 allocs/op
+PASS
+ok  	bitcask/experiments/fault	16.672s

@@ -1,0 +1,42 @@
+goos: darwin
+goarch: arm64
+pkg: bitcask
+cpu: Apple M3 Max
+BenchmarkAutonomousPhaseTransitions/autonomous=false-14         	     100	  13853391 ns/op	         0 audit-events	     10000 commit-p50-ns	     50000 commit-p99-ns	 1130170 B/op	    1620 allocs/op
+BenchmarkAutonomousPhaseTransitions/autonomous=false-14         	     241	   5006650 ns/op	         0 audit-events	     10000 commit-p50-ns	     25000 commit-p99-ns	 1130169 B/op	    1621 allocs/op
+BenchmarkAutonomousPhaseTransitions/autonomous=false-14         	     241	   4986234 ns/op	         0 audit-events	     10000 commit-p50-ns	     50000 commit-p99-ns	 1130171 B/op	    1621 allocs/op
+BenchmarkAutonomousPhaseTransitions/autonomous=false-14         	     243	   5061202 ns/op	         0 audit-events	     10000 commit-p50-ns	     50000 commit-p99-ns	 1130215 B/op	    1621 allocs/op
+BenchmarkAutonomousPhaseTransitions/autonomous=false-14         	     242	   5056609 ns/op	         0 audit-events	     10000 commit-p50-ns	     25000 commit-p99-ns	 1130217 B/op	    1621 allocs/op
+BenchmarkAutonomousPhaseTransitions/autonomous=true-14          	     236	   5242118 ns/op	         5.000 audit-events	     10000 commit-p50-ns	     50000 commit-p99-ns	 1154423 B/op	    1706 allocs/op
+BenchmarkAutonomousPhaseTransitions/autonomous=true-14          	     236	   5346955 ns/op	         5.000 audit-events	     10000 commit-p50-ns	     50000 commit-p99-ns	 1154476 B/op	    1706 allocs/op
+BenchmarkAutonomousPhaseTransitions/autonomous=true-14          	     242	   5060869 ns/op	         5.000 audit-events	     10000 commit-p50-ns	    100000 commit-p99-ns	 1154426 B/op	    1706 allocs/op
+BenchmarkAutonomousPhaseTransitions/autonomous=true-14          	     238	   5172712 ns/op	         5.000 audit-events	     10000 commit-p50-ns	     50000 commit-p99-ns	 1154400 B/op	    1706 allocs/op
+BenchmarkAutonomousPhaseTransitions/autonomous=true-14          	     238	   5210752 ns/op	         5.000 audit-events	     10000 commit-p50-ns	     25000 commit-p99-ns	 1154382 B/op	    1706 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=false-14         	   31050	     38944 ns/op	     826 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=false-14         	   30057	     39237 ns/op	     826 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=false-14         	   31078	     39181 ns/op	     825 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=false-14         	   30976	     40625 ns/op	     826 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=false-14         	   31023	     39365 ns/op	     826 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=true-14          	   30837	     39240 ns/op	     823 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=true-14          	   31300	     45566 ns/op	     824 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=true-14          	   23970	     52466 ns/op	     759 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=true-14          	   21727	     57926 ns/op	     772 B/op	      15 allocs/op
+BenchmarkAutonomousObservationOverhead/enabled=true-14          	   23210	     58822 ns/op	     763 B/op	      15 allocs/op
+BenchmarkApplyPolicyRecommendation-14                           	34866836	        33.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkApplyPolicyRecommendation-14                           	35716117	        33.54 ns/op	       0 B/op	       0 allocs/op
+BenchmarkApplyPolicyRecommendation-14                           	30237692	        33.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkApplyPolicyRecommendation-14                           	36023868	        33.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkApplyPolicyRecommendation-14                           	35176213	        33.23 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	bitcask	45.365s
+goos: darwin
+goarch: arm64
+pkg: bitcask/experiments/autonomous
+cpu: Apple M3 Max
+BenchmarkDetectorAnalyze-14    	415133398	         2.877 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDetectorAnalyze-14    	417953662	         2.849 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDetectorAnalyze-14    	422229564	         2.883 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDetectorAnalyze-14    	414209930	         2.901 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDetectorAnalyze-14    	412756053	         2.859 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	bitcask/experiments/autonomous	7.649s

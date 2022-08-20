@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"bitcask"
+	"github.com/BreezeTeam/bitcask/engine"
 )
 
 type profilePayload struct {

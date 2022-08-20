@@ -1,0 +1,37 @@
+goos: darwin
+goarch: arm64
+pkg: bitcask
+cpu: Apple M3 Max
+BenchmarkCompactionRecommendation-14      	     937	   1267268 ns/op	  264150 B/op	    3400 allocs/op
+BenchmarkCompactionRecommendation-14      	     946	   1264239 ns/op	  264161 B/op	    3400 allocs/op
+BenchmarkCompactionRecommendation-14      	     937	   1273127 ns/op	  264161 B/op	    3400 allocs/op
+BenchmarkCompactionRecommendation-14      	     919	   1280399 ns/op	  264144 B/op	    3400 allocs/op
+BenchmarkCompactionRecommendation-14      	     954	   1370930 ns/op	  264166 B/op	    3400 allocs/op
+BenchmarkCompactionForegroundImpact/no-merge-14         	   30565	     39570 ns/op	      3500 p50-ns	    333708 p99-ns	         0 rewrite-B	    1137 B/op	      16 allocs/op
+BenchmarkCompactionForegroundImpact/no-merge-14         	   30396	     39761 ns/op	      3500 p50-ns	    359000 p99-ns	         0 rewrite-B	    1134 B/op	      16 allocs/op
+BenchmarkCompactionForegroundImpact/no-merge-14         	   30530	     39621 ns/op	      3666 p50-ns	    354166 p99-ns	         0 rewrite-B	    1137 B/op	      16 allocs/op
+BenchmarkCompactionForegroundImpact/no-merge-14         	   30762	     39603 ns/op	      4208 p50-ns	    475209 p99-ns	         0 rewrite-B	    1133 B/op	      16 allocs/op
+BenchmarkCompactionForegroundImpact/no-merge-14         	   30774	     39406 ns/op	      4084 p50-ns	    489833 p99-ns	         0 rewrite-B	    1135 B/op	      16 allocs/op
+BenchmarkCompactionForegroundImpact/static-merge-14     	     565	   1774663 ns/op	      4583 p50-ns	    977458 p99-ns	     66833 rewrite-B	    1939 B/op	      29 allocs/op
+BenchmarkCompactionForegroundImpact/static-merge-14     	     591	   1695471 ns/op	      6584 p50-ns	    653125 p99-ns	     69368 rewrite-B	    1911 B/op	      29 allocs/op
+BenchmarkCompactionForegroundImpact/static-merge-14     	     706	   1737462 ns/op	      3416 p50-ns	    387541 p99-ns	     80678 rewrite-B	    1901 B/op	      28 allocs/op
+BenchmarkCompactionForegroundImpact/static-merge-14     	     710	   1498621 ns/op	      3000 p50-ns	    329542 p99-ns	     81068 rewrite-B	    1897 B/op	      28 allocs/op
+BenchmarkCompactionForegroundImpact/static-merge-14     	     582	   1782936 ns/op	      5709 p50-ns	   1026916 p99-ns	     68588 rewrite-B	    1924 B/op	      29 allocs/op
+BenchmarkCompactionForegroundImpact/budgeted-merge-14   	   23188	     44681 ns/op	      3666 p50-ns	    459791 p99-ns	         0 rewrite-B	    1401 B/op	      19 allocs/op
+BenchmarkCompactionForegroundImpact/budgeted-merge-14   	   27195	     43337 ns/op	      4708 p50-ns	    355875 p99-ns	         0 rewrite-B	    1369 B/op	      19 allocs/op
+BenchmarkCompactionForegroundImpact/budgeted-merge-14   	   26517	     43150 ns/op	      5333 p50-ns	    366042 p99-ns	         0 rewrite-B	    1377 B/op	      19 allocs/op
+BenchmarkCompactionForegroundImpact/budgeted-merge-14   	   25076	     46944 ns/op	      4042 p50-ns	    341125 p99-ns	         0 rewrite-B	    1383 B/op	      19 allocs/op
+BenchmarkCompactionForegroundImpact/budgeted-merge-14   	   24802	     43823 ns/op	      2375 p50-ns	    293916 p99-ns	         0 rewrite-B	    1386 B/op	      19 allocs/op
+PASS
+ok  	bitcask
+goos: darwin
+goarch: arm64
+pkg: bitcask/experiments/compaction
+cpu: Apple M3 Max
+BenchmarkAnalyzeCompactionWorkload-14    	    8662	    139596 ns/op	  108827 B/op	      21 allocs/op
+BenchmarkAnalyzeCompactionWorkload-14    	    8468	    142362 ns/op	  108828 B/op	      21 allocs/op
+BenchmarkAnalyzeCompactionWorkload-14    	    7642	    137303 ns/op	  108836 B/op	      22 allocs/op
+BenchmarkAnalyzeCompactionWorkload-14    	    8487	    140643 ns/op	  108828 B/op	      21 allocs/op
+BenchmarkAnalyzeCompactionWorkload-14    	    8374	    139930 ns/op	  108829 B/op	      21 allocs/op
+PASS
+ok  	bitcask/experiments/compaction	7.463s

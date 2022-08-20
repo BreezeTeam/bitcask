@@ -1,4 +1,4 @@
-module bitcask
+module github.com/BreezeTeam/bitcask
 
 go 1.16
 

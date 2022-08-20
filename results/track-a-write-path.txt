@@ -1,0 +1,351 @@
+goos: darwin
+goarch: arm64
+pkg: bitcask
+cpu: Apple M3 Max
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=false-14         	   30885	     39130 ns/op	     803 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=false-14         	   31122	     39139 ns/op	     801 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=false-14         	   31080	     38893 ns/op	     801 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=false-14         	   30798	     38919 ns/op	     803 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=false-14         	   30807	     38906 ns/op	     803 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=true-14          	     286	   4157171 ns/op	     767 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=true-14          	     295	   4176624 ns/op	     761 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=true-14          	     285	   4179211 ns/op	     768 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=true-14          	     295	   4233877 ns/op	     761 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=0B/sync=true-14          	     276	   4119619 ns/op	     775 B/op	      14 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=false-14         	   30908	     39097 ns/op	   0.20 MB/s	     827 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=false-14         	   31060	     38919 ns/op	   0.21 MB/s	     826 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=false-14         	   30813	     38907 ns/op	   0.21 MB/s	     827 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=false-14         	   30792	     38921 ns/op	   0.21 MB/s	     825 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=false-14         	   31011	     39289 ns/op	   0.20 MB/s	     826 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=true-14          	     282	   4350620 ns/op	   0.00 MB/s	     794 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=true-14          	     244	   4273350 ns/op	   0.00 MB/s	     818 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=true-14          	     289	   4220694 ns/op	   0.00 MB/s	     790 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=true-14          	     297	   4252386 ns/op	   0.00 MB/s	     786 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=8B/sync=true-14          	     292	   4092206 ns/op	   0.00 MB/s	     789 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=false-14        	   30981	     38982 ns/op	   0.41 MB/s	     834 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=false-14        	   30918	     39097 ns/op	   0.41 MB/s	     833 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=false-14        	   30798	     38935 ns/op	   0.41 MB/s	     835 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=false-14        	   31070	     39226 ns/op	   0.41 MB/s	     833 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=false-14        	   31156	     39149 ns/op	   0.41 MB/s	     833 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=true-14         	     282	   4168980 ns/op	   0.00 MB/s	     803 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=true-14         	     276	   4151458 ns/op	   0.00 MB/s	     806 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=true-14         	     292	   4468753 ns/op	   0.00 MB/s	     796 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=true-14         	     283	   4667197 ns/op	   0.00 MB/s	     801 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16B/sync=true-14         	     247	   4314914 ns/op	   0.00 MB/s	     823 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=false-14        	   30898	     39134 ns/op	   0.82 MB/s	     867 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=false-14        	   31081	     39197 ns/op	   0.82 MB/s	     865 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=false-14        	   31059	     38917 ns/op	   0.82 MB/s	     865 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=false-14        	   30764	     38969 ns/op	   0.82 MB/s	     862 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=false-14        	   31050	     39243 ns/op	   0.82 MB/s	     864 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=true-14         	     260	   4438813 ns/op	   0.01 MB/s	     847 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=true-14         	     291	   4230412 ns/op	   0.01 MB/s	     828 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=true-14         	     278	   4491776 ns/op	   0.01 MB/s	     836 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=true-14         	     273	   4402781 ns/op	   0.01 MB/s	     837 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=32B/sync=true-14         	     294	   4407716 ns/op	   0.01 MB/s	     826 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=false-14      	   31290	     38936 ns/op	  26.30 MB/s	    2912 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=false-14      	   30805	     38912 ns/op	  26.32 MB/s	    2914 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=false-14      	   31231	     39010 ns/op	  26.25 MB/s	    2913 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=false-14      	   30770	     38947 ns/op	  26.29 MB/s	    2914 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=false-14      	   30466	     39010 ns/op	  26.25 MB/s	    2916 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=true-14       	     259	   4450687 ns/op	   0.23 MB/s	    2894 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=true-14       	     262	   4125325 ns/op	   0.25 MB/s	    2893 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=true-14       	     285	   4305100 ns/op	   0.24 MB/s	    2880 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=true-14       	     285	   4459377 ns/op	   0.23 MB/s	    2880 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=1024B/sync=true-14       	     279	   4336665 ns/op	   0.24 MB/s	    2883 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=false-14     	   31093	     38797 ns/op	 422.30 MB/s	   35554 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=false-14     	   30938	     39558 ns/op	 414.18 MB/s	   35555 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=false-14     	   30896	     38929 ns/op	 420.87 MB/s	   35556 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=false-14     	   31293	     39392 ns/op	 415.92 MB/s	   35553 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=false-14     	   30830	     38783 ns/op	 422.45 MB/s	   35554 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=true-14      	     254	   4920137 ns/op	   3.33 MB/s	   35564 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=true-14      	     244	   4953365 ns/op	   3.31 MB/s	   35576 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=true-14      	     243	   4787943 ns/op	   3.42 MB/s	   35574 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=true-14      	     240	   4894511 ns/op	   3.35 MB/s	   35567 B/op	      15 allocs/op
+BenchmarkTxCommitSingleEntryBaseline/value=16384B/sync=true-14      	     237	   4931760 ns/op	   3.32 MB/s	   35572 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=0B-14                    	   31104	     38874 ns/op	     801 B/op	      14 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=0B-14                    	   30774	     38950 ns/op	     803 B/op	      14 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=0B-14                    	   30810	     38898 ns/op	     803 B/op	      14 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=0B-14                    	   31021	     39278 ns/op	     802 B/op	      14 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=0B-14                    	   31038	     38953 ns/op	     800 B/op	      14 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=8B-14                    	   30817	     38903 ns/op	   0.21 MB/s	     827 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=8B-14                    	   30292	     38918 ns/op	   0.21 MB/s	     830 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=8B-14                    	   31040	     39246 ns/op	   0.20 MB/s	     826 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=8B-14                    	   31050	     38930 ns/op	   0.21 MB/s	     826 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=8B-14                    	   30807	     38924 ns/op	   0.21 MB/s	     827 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=16B-14                   	   30829	     38896 ns/op	   0.41 MB/s	     833 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=16B-14                   	   31075	     39204 ns/op	   0.41 MB/s	     833 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=16B-14                   	   31078	     39193 ns/op	   0.41 MB/s	     833 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=16B-14                   	   31040	     38946 ns/op	   0.41 MB/s	     834 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=16B-14                   	   30810	     38893 ns/op	   0.41 MB/s	     835 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=32B-14                   	   30878	     38824 ns/op	   0.82 MB/s	     867 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=32B-14                   	   30787	     38937 ns/op	   0.82 MB/s	     867 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=32B-14                   	   31132	     39135 ns/op	   0.82 MB/s	     865 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=32B-14                   	   30356	     38824 ns/op	   0.82 MB/s	     868 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=32B-14                   	   30763	     38966 ns/op	   0.82 MB/s	     867 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=64B-14                   	   31080	     39204 ns/op	   1.63 MB/s	     928 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=64B-14                   	   31123	     39123 ns/op	   1.64 MB/s	     929 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=64B-14                   	   31129	     39114 ns/op	   1.64 MB/s	     927 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=64B-14                   	   31059	     38893 ns/op	   1.65 MB/s	     929 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostBaseline/value=64B-14                   	   30801	     38881 ns/op	   1.65 MB/s	     931 B/op	      15 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=1-14                  	   30807	     38899 ns/op	     508 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=1-14                  	   30237	     38980 ns/op	     510 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=1-14                  	   31038	     38934 ns/op	     508 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=1-14                  	   30835	     38863 ns/op	     508 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=1-14                  	   30807	     38891 ns/op	     508 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=8-14                  	   30885	     39103 ns/op	    2228 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=8-14                  	   30799	     38941 ns/op	    2228 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=8-14                  	   31023	     39234 ns/op	    2228 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=8-14                  	   31016	     38979 ns/op	    2228 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=8-14                  	   30732	     39336 ns/op	    2229 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=64-14                 	   20937	     57076 ns/op	   15881 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=64-14                 	   20748	     57618 ns/op	   15882 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=64-14                 	   20780	     57593 ns/op	   15881 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=64-14                 	   21043	     57256 ns/op	   15881 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=64-14                 	   21138	     57635 ns/op	   15880 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=256-14                	    5259	    233239 ns/op	   63060 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=256-14                	    5186	    230747 ns/op	   63062 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=256-14                	    4713	    230459 ns/op	   63068 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=256-14                	    5278	    233003 ns/op	   63060 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=0B/batch=256-14                	    5035	    238636 ns/op	   63064 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=1-14                  	   30874	     39145 ns/op	   0.20 MB/s	     516 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=1-14                  	   31006	     38995 ns/op	   0.21 MB/s	     516 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=1-14                  	   30775	     38949 ns/op	   0.21 MB/s	     516 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=1-14                  	   31029	     38979 ns/op	   0.21 MB/s	     516 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=1-14                  	   30795	     38938 ns/op	   0.21 MB/s	     516 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=8-14                  	   30811	     38923 ns/op	   1.64 MB/s	    2292 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=8-14                  	   31018	     39222 ns/op	   1.63 MB/s	    2292 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=8-14                  	   31009	     38980 ns/op	   1.64 MB/s	    2292 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=8-14                  	   30795	     38935 ns/op	   1.64 MB/s	    2292 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=8-14                  	   31022	     39239 ns/op	   1.63 MB/s	    2292 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=64-14                 	   19965	     58090 ns/op	   8.81 MB/s	   16460 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=64-14                 	   20716	     58197 ns/op	   8.80 MB/s	   16458 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=64-14                 	   20973	     58526 ns/op	   8.75 MB/s	   16457 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=64-14                 	   20929	     57908 ns/op	   8.84 MB/s	   16457 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=64-14                 	   20910	     58090 ns/op	   8.81 MB/s	   16457 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=256-14                	    5174	    228205 ns/op	   8.97 MB/s	   65366 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=256-14                	    5290	    234179 ns/op	   8.75 MB/s	   65364 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=256-14                	    5310	    234507 ns/op	   8.73 MB/s	   65364 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=256-14                	    5125	    240721 ns/op	   8.51 MB/s	   65367 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=8B/batch=256-14                	    5124	    233784 ns/op	   8.76 MB/s	   65366 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=1-14                 	   31153	     39117 ns/op	   0.82 MB/s	     579 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=1-14                 	   30998	     39005 ns/op	   0.82 MB/s	     580 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=1-14                 	   30822	     38909 ns/op	   0.82 MB/s	     580 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=1-14                 	   30265	     38950 ns/op	   0.82 MB/s	     582 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=1-14                 	   30982	     39020 ns/op	   0.82 MB/s	     580 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=8-14                 	   30835	     38906 ns/op	   6.58 MB/s	    2516 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=8-14                 	   30789	     38938 ns/op	   6.57 MB/s	    2516 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=8-14                 	   31057	     39191 ns/op	   6.53 MB/s	    2516 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=8-14                 	   30990	     39009 ns/op	   6.56 MB/s	    2516 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=8-14                 	   30798	     38939 ns/op	   6.57 MB/s	    2516 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=64-14                	   20744	     59501 ns/op	  34.42 MB/s	   18154 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=64-14                	   20696	     59386 ns/op	  34.49 MB/s	   18154 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=64-14                	   20439	     59441 ns/op	  34.45 MB/s	   18154 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=64-14                	   20338	     59219 ns/op	  34.58 MB/s	   18155 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=64-14                	   20523	     58526 ns/op	  34.99 MB/s	   18154 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=256-14               	    5186	    235884 ns/op	  34.73 MB/s	   71542 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=256-14               	    5215	    237595 ns/op	  34.48 MB/s	   71541 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=256-14               	    5001	    243539 ns/op	  33.64 MB/s	   71544 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=256-14               	    5132	    236097 ns/op	  34.70 MB/s	   71542 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=32B/batch=256-14               	    5064	    236270 ns/op	  34.67 MB/s	   71543 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=1-14               	   31239	     39024 ns/op	  26.24 MB/s	    2739 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=1-14               	   31003	     39304 ns/op	  26.05 MB/s	    2740 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=1-14               	   31026	     38989 ns/op	  26.26 MB/s	    2740 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=1-14               	   30796	     38940 ns/op	  26.30 MB/s	    2740 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=1-14               	   31068	     39257 ns/op	  26.08 MB/s	    2740 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=8-14               	   31066	     39158 ns/op	 209.21 MB/s	   12724 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=8-14               	   31228	     39030 ns/op	 209.89 MB/s	   12724 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=8-14               	   30718	     38962 ns/op	 210.26 MB/s	   12725 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=8-14               	   30794	     38928 ns/op	 210.44 MB/s	   12725 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=8-14               	   30828	     38894 ns/op	 210.63 MB/s	   12724 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=64-14              	   10000	    104769 ns/op	 625.53 MB/s	   90254 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=64-14              	   10000	    101346 ns/op	 646.66 MB/s	   90253 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=64-14              	   12180	     98827 ns/op	 663.14 MB/s	   90243 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=64-14              	   12387	     98425 ns/op	 665.85 MB/s	   90242 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=64-14              	   12050	     98293 ns/op	 666.74 MB/s	   90244 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=256-14             	    3104	    399846 ns/op	 655.61 MB/s	  332696 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=256-14             	    2731	    422709 ns/op	 620.15 MB/s	  332705 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=256-14             	    3105	    397984 ns/op	 658.68 MB/s	  332696 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=256-14             	    2935	    394583 ns/op	 664.36 MB/s	  332700 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=1024B/batch=256-14             	    2818	    397419 ns/op	 659.62 MB/s	  332703 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=1-14              	   30848	     38854 ns/op	 421.68 MB/s	   37301 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=1-14              	   30760	     38930 ns/op	 420.86 MB/s	   37301 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=1-14              	   30942	     38989 ns/op	 420.22 MB/s	   37300 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=1-14              	   30770	     38905 ns/op	 421.13 MB/s	   37301 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=1-14              	   31233	     38929 ns/op	 420.87 MB/s	   37300 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=8-14              	   20097	     61563 ns/op	2129.09 MB/s	  159781 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=8-14              	   20250	     62802 ns/op	2087.08 MB/s	  159781 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=8-14              	   20088	     61628 ns/op	2126.81 MB/s	  159781 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=8-14              	   20534	     60994 ns/op	2148.93 MB/s	  159780 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=8-14              	   20539	     63496 ns/op	2064.24 MB/s	  159780 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=64-14             	    2721	    448848 ns/op	2336.15 MB/s	 1090578 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=64-14             	    2658	    449959 ns/op	2330.38 MB/s	 1090580 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=64-14             	    2628	    462015 ns/op	2269.57 MB/s	 1090581 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=64-14             	    2784	    470896 ns/op	2226.77 MB/s	 1090577 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=64-14             	    2761	    446552 ns/op	2348.16 MB/s	 1090577 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=256-14            	     680	   1850384 ns/op	2266.72 MB/s	 4282225 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=256-14            	     715	   1762279 ns/op	2380.05 MB/s	 4282219 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=256-14            	     688	   1838610 ns/op	2281.24 MB/s	 4282223 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=256-14            	     693	   1740072 ns/op	2410.42 MB/s	 4282223 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=16384B/batch=256-14            	     658	   1750412 ns/op	2396.18 MB/s	 4282231 B/op	    1286 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=1-14              	   30942	     38974 ns/op	1681.51 MB/s	  147894 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=1-14              	   30919	     39131 ns/op	1674.80 MB/s	  147894 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=1-14              	   30932	     39007 ns/op	1680.11 MB/s	  147894 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=1-14              	   30853	     39107 ns/op	1675.81 MB/s	  147894 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=1-14              	   30760	     39172 ns/op	1673.05 MB/s	  147895 B/op	      11 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=8-14              	    6745	    231425 ns/op	2265.48 MB/s	  608285 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=8-14              	    6712	    180468 ns/op	2905.16 MB/s	  608285 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=8-14              	    6715	    180938 ns/op	2897.61 MB/s	  608285 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=8-14              	    6606	    180474 ns/op	2905.05 MB/s	  608285 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=8-14              	    6805	    180719 ns/op	2901.12 MB/s	  608285 B/op	      46 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=64-14             	     964	   1265234 ns/op	3315.04 MB/s	 4291643 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=64-14             	     938	   1313217 ns/op	3193.92 MB/s	 4291647 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=64-14             	     984	   1296289 ns/op	3235.62 MB/s	 4291642 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=64-14             	     956	   1243532 ns/op	3372.90 MB/s	 4291642 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=64-14             	     964	   1296435 ns/op	3235.26 MB/s	 4291644 B/op	     326 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=256-14            	     241	   5772550 ns/op	2906.38 MB/s	16920662 B/op	    1288 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=256-14            	     242	   5253359 ns/op	3193.62 MB/s	16920660 B/op	    1288 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=256-14            	     243	   5213254 ns/op	3218.19 MB/s	16920659 B/op	    1288 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=256-14            	     246	   5115820 ns/op	3279.48 MB/s	16920654 B/op	    1288 allocs/op
+BenchmarkWriteAllocationMatrix/value=65536B/batch=256-14            	     243	   5211696 ns/op	3219.15 MB/s	16920659 B/op	    1288 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=0B-14                   	   31123	     39131 ns/op	     801 B/op	      14 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=0B-14                   	   30998	     39001 ns/op	     800 B/op	      14 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=0B-14                   	   30316	     38890 ns/op	     804 B/op	      14 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=0B-14                   	   31094	     39199 ns/op	     801 B/op	      14 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=0B-14                   	   31093	     39191 ns/op	     801 B/op	      14 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=8B-14                   	   31041	     38937 ns/op	   0.21 MB/s	     824 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=8B-14                   	   30830	     38902 ns/op	   0.21 MB/s	     825 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=8B-14                   	   30835	     38876 ns/op	   0.21 MB/s	     825 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=8B-14                   	   30903	     38845 ns/op	   0.21 MB/s	     826 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=8B-14                   	   30846	     38864 ns/op	   0.21 MB/s	     827 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=16B-14                  	   30780	     38951 ns/op	   0.41 MB/s	     835 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=16B-14                  	   30806	     38917 ns/op	   0.41 MB/s	     835 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=16B-14                  	   31054	     39220 ns/op	   0.41 MB/s	     834 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=16B-14                  	   31006	     38992 ns/op	   0.41 MB/s	     834 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=16B-14                  	   30808	     38905 ns/op	   0.41 MB/s	     835 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=32B-14                  	   30295	     38935 ns/op	   0.82 MB/s	     868 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=32B-14                  	   31077	     39207 ns/op	   0.82 MB/s	     865 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=32B-14                  	   31053	     38932 ns/op	   0.82 MB/s	     866 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=32B-14                  	   30812	     38910 ns/op	   0.82 MB/s	     865 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=32B-14                  	   30806	     38925 ns/op	   0.82 MB/s	     867 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=64B-14                  	   30370	     38838 ns/op	   1.65 MB/s	     930 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=64B-14                  	   30831	     38903 ns/op	   1.65 MB/s	     929 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=64B-14                  	   30384	     38817 ns/op	   1.65 MB/s	     934 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=64B-14                  	   30742	     38996 ns/op	   1.64 MB/s	     931 B/op	      15 allocs/op
+BenchmarkSmallValueFixedCostOptimized/value=64B-14                  	   31129	     39137 ns/op	   1.64 MB/s	     929 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=32B-14                            	   30992	     38977 ns/op	   0.82 MB/s	     918 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=32B-14                            	   30805	     38894 ns/op	   0.82 MB/s	     923 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=32B-14                            	   30813	     38911 ns/op	   0.82 MB/s	     923 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=32B-14                            	   31092	     39523 ns/op	   0.81 MB/s	     921 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=32B-14                            	   31057	     39221 ns/op	   0.82 MB/s	     922 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=1024B-14                          	   31016	     38965 ns/op	  26.28 MB/s	    3064 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=1024B-14                          	   30774	     38934 ns/op	  26.30 MB/s	    3068 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=1024B-14                          	   31324	     39182 ns/op	  26.13 MB/s	    3064 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=1024B-14                          	   31174	     39056 ns/op	  26.22 MB/s	    3065 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=1024B-14                          	   31232	     38991 ns/op	  26.26 MB/s	    3065 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=16384B-14                         	   30765	     38879 ns/op	 421.40 MB/s	   37628 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=16384B-14                         	   30699	     38683 ns/op	 423.54 MB/s	   37627 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=16384B-14                         	   30963	     38980 ns/op	 420.32 MB/s	   37627 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=16384B-14                         	   31134	     38890 ns/op	 421.29 MB/s	   37626 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=1/value=16384B-14                         	   31291	     38876 ns/op	 421.44 MB/s	   37625 B/op	      15 allocs/op
+BenchmarkTxPutBatch/batch=8/value=32B-14                            	   31032	     39502 ns/op	   6.48 MB/s	    5217 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=32B-14                            	   30808	     39200 ns/op	   6.53 MB/s	    5224 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=32B-14                            	   31022	     38919 ns/op	   6.58 MB/s	    5217 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=32B-14                            	   30888	     39004 ns/op	   6.56 MB/s	    5214 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=32B-14                            	   30769	     38914 ns/op	   6.58 MB/s	    5214 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=1024B-14                          	   30975	     38993 ns/op	 210.09 MB/s	   15331 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=1024B-14                          	   30678	     38759 ns/op	 211.36 MB/s	   15313 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=1024B-14                          	   30680	     38757 ns/op	 211.37 MB/s	   15324 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=1024B-14                          	   30750	     41246 ns/op	 198.61 MB/s	   15334 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=1024B-14                          	   30750	     38912 ns/op	 210.53 MB/s	   15338 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=16384B-14                         	   17092	     90606 ns/op	1446.61 MB/s	  162312 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=16384B-14                         	   19423	     72107 ns/op	1817.75 MB/s	  162205 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=16384B-14                         	   19146	     68132 ns/op	1923.78 MB/s	  162217 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=16384B-14                         	   19503	     76493 ns/op	1713.51 MB/s	  162202 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=8/value=16384B-14                         	   14562	     68876 ns/op	1903.02 MB/s	  162302 B/op	      85 allocs/op
+BenchmarkTxPutBatch/batch=64/value=32B-14                           	   10000	    102400 ns/op	  20.00 MB/s	   37880 B/op	     640 allocs/op
+BenchmarkTxPutBatch/batch=64/value=32B-14                           	   12027	    100093 ns/op	  20.46 MB/s	   36929 B/op	     640 allocs/op
+BenchmarkTxPutBatch/batch=64/value=32B-14                           	   10000	    104609 ns/op	  19.58 MB/s	   37880 B/op	     640 allocs/op
+BenchmarkTxPutBatch/batch=64/value=32B-14                           	   10000	    105152 ns/op	  19.48 MB/s	   37880 B/op	     640 allocs/op
+BenchmarkTxPutBatch/batch=64/value=32B-14                           	   10000	    101282 ns/op	  20.22 MB/s	   37880 B/op	     640 allocs/op
+BenchmarkTxPutBatch/batch=64/value=1024B-14                         	    9342	    142530 ns/op	 459.80 MB/s	  109861 B/op	     640 allocs/op
+BenchmarkTxPutBatch/batch=64/value=1024B-14                         	    9582	    140556 ns/op	 466.26 MB/s	  109710 B/op	     640 allocs/op
+BenchmarkTxPutBatch/batch=64/value=1024B-14                         	    8905	    141495 ns/op	 463.17 MB/s	  110158 B/op	     640 allocs/op
+BenchmarkTxPutBatch/batch=64/value=1024B-14                         	    9296	    138527 ns/op	 473.09 MB/s	  109891 B/op	     640 allocs/op
+BenchmarkTxPutBatch/batch=64/value=1024B-14                         	    9544	    139846 ns/op	 468.63 MB/s	  109734 B/op	     640 allocs/op
+BenchmarkTxPutBatch/batch=64/value=16384B-14                        	    2552	    602557 ns/op	1740.21 MB/s	 1109644 B/op	     636 allocs/op
+BenchmarkTxPutBatch/batch=64/value=16384B-14                        	    2281	    574757 ns/op	1824.38 MB/s	 1110296 B/op	     635 allocs/op
+BenchmarkTxPutBatch/batch=64/value=16384B-14                        	    2092	    647278 ns/op	1619.98 MB/s	 1110851 B/op	     634 allocs/op
+BenchmarkTxPutBatch/batch=64/value=16384B-14                        	    2407	    523844 ns/op	2001.70 MB/s	 1109974 B/op	     635 allocs/op
+BenchmarkTxPutBatch/batch=64/value=16384B-14                        	    2641	    566361 ns/op	1851.43 MB/s	 1109458 B/op	     636 allocs/op
+BenchmarkTxPutBatch/batch=256/value=32B-14                          	    3501	    460104 ns/op	  17.80 MB/s	  149171 B/op	    2532 allocs/op
+BenchmarkTxPutBatch/batch=256/value=32B-14                          	    2862	    517934 ns/op	  15.82 MB/s	  148743 B/op	    2528 allocs/op
+BenchmarkTxPutBatch/batch=256/value=32B-14                          	    2356	    439914 ns/op	  18.62 MB/s	  152913 B/op	    2523 allocs/op
+BenchmarkTxPutBatch/batch=256/value=32B-14                          	    3096	    447055 ns/op	  18.32 MB/s	  147276 B/op	    2530 allocs/op
+BenchmarkTxPutBatch/batch=256/value=32B-14                          	    3616	    473049 ns/op	  17.32 MB/s	  153668 B/op	    2533 allocs/op
+BenchmarkTxPutBatch/batch=256/value=1024B-14                        	    2288	    647390 ns/op	 404.92 MB/s	  411439 B/op	    2523 allocs/op
+BenchmarkTxPutBatch/batch=256/value=1024B-14                        	    1898	    598575 ns/op	 437.95 MB/s	  415768 B/op	    2517 allocs/op
+BenchmarkTxPutBatch/batch=256/value=1024B-14                        	    2049	    614267 ns/op	 426.76 MB/s	  414272 B/op	    2520 allocs/op
+BenchmarkTxPutBatch/batch=256/value=1024B-14                        	    2408	    592217 ns/op	 442.65 MB/s	  410229 B/op	    2524 allocs/op
+BenchmarkTxPutBatch/batch=256/value=1024B-14                        	    1719	    616973 ns/op	 424.89 MB/s	  404477 B/op	    2513 allocs/op
+BenchmarkTxPutBatch/batch=256/value=16384B-14                       	     630	   2498557 ns/op	1678.69 MB/s	 4358068 B/op	    2448 allocs/op
+BenchmarkTxPutBatch/batch=256/value=16384B-14                       	     628	   2839860 ns/op	1476.94 MB/s	 4358133 B/op	    2447 allocs/op
+BenchmarkTxPutBatch/batch=256/value=16384B-14                       	     598	   2382168 ns/op	1760.71 MB/s	 4359212 B/op	    2442 allocs/op
+BenchmarkTxPutBatch/batch=256/value=16384B-14                       	     649	   2350133 ns/op	1784.71 MB/s	 4357442 B/op	    2451 allocs/op
+BenchmarkTxPutBatch/batch=256/value=16384B-14                       	     530	   2494912 ns/op	1681.14 MB/s	 4362114 B/op	    2428 allocs/op
+BenchmarkWritePathEncode/value=32B/alloc-14                         	29291629	        38.97 ns/op	2104.38 MB/s	      96 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=32B/alloc-14                         	31148469	        40.84 ns/op	2007.92 MB/s	      96 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=32B/alloc-14                         	36218214	        40.77 ns/op	2011.16 MB/s	      96 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=32B/alloc-14                         	34076469	        41.20 ns/op	1990.39 MB/s	      96 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=32B/alloc-14                         	35758450	        40.80 ns/op	2010.02 MB/s	      96 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=32B/reuse-14                         	67771404	        16.21 ns/op	5059.82 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=32B/reuse-14                         	68083657	        17.74 ns/op	4623.54 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=32B/reuse-14                         	77696721	        18.19 ns/op	4508.48 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=32B/reuse-14                         	64755622	        16.56 ns/op	4951.03 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=32B/reuse-14                         	72563275	        18.32 ns/op	4477.03 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=1024B/alloc-14                       	 4823490	       300.4 ns/op	3575.04 MB/s	    1152 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=1024B/alloc-14                       	 4293283	       300.6 ns/op	3572.95 MB/s	    1152 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=1024B/alloc-14                       	 3577723	       290.1 ns/op	3701.58 MB/s	    1152 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=1024B/alloc-14                       	 4194806	       291.8 ns/op	3680.99 MB/s	    1152 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=1024B/alloc-14                       	 4620632	       291.4 ns/op	3685.33 MB/s	    1152 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=1024B/reuse-14                       	 8392327	       128.2 ns/op	8379.99 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=1024B/reuse-14                       	 8252028	       135.5 ns/op	7924.21 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=1024B/reuse-14                       	 9584127	       138.7 ns/op	7741.97 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=1024B/reuse-14                       	 9331059	       151.2 ns/op	7104.09 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=1024B/reuse-14                       	 8770822	       161.8 ns/op	6638.61 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=16384B/alloc-14                      	  327424	      3994 ns/op	4115.09 MB/s	   18432 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=16384B/alloc-14                      	  239787	      4498 ns/op	3653.86 MB/s	   18432 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=16384B/alloc-14                      	  302319	      4513 ns/op	3641.40 MB/s	   18432 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=16384B/alloc-14                      	  281566	      4375 ns/op	3756.49 MB/s	   18432 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=16384B/alloc-14                      	  262666	      4338 ns/op	3787.97 MB/s	   18432 B/op	       1 allocs/op
+BenchmarkWritePathEncode/value=16384B/reuse-14                      	  484324	      2105 ns/op	7805.53 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=16384B/reuse-14                      	  572328	      1991 ns/op	8255.48 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=16384B/reuse-14                      	  627171	      1993 ns/op	8246.19 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=16384B/reuse-14                      	  567979	      1901 ns/op	8642.82 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathEncode/value=16384B/reuse-14                      	  619900	      2028 ns/op	8102.11 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=32B-14                       	 1577902	       889.2 ns/op	  92.22 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=32B-14                       	 1668204	       797.8 ns/op	 102.78 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=32B-14                       	 1489897	       799.7 ns/op	 102.54 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=32B-14                       	 1586320	       818.3 ns/op	 100.21 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=32B-14                       	 1575352	       806.6 ns/op	 101.66 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=1024B-14                     	 1000000	      1437 ns/op	 747.36 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=1024B-14                     	 1000000	      1287 ns/op	 834.47 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=1024B-14                     	  896844	      1232 ns/op	 872.07 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=1024B-14                     	 1000000	      1331 ns/op	 806.92 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=1024B-14                     	  899217	      1165 ns/op	 922.14 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=16384B-14                    	  296883	      6674 ns/op	2462.25 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=16384B-14                    	  252320	      6040 ns/op	2720.97 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=16384B-14                    	  255301	      5271 ns/op	3117.80 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=16384B-14                    	  288592	      5140 ns/op	3197.44 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathDataFileAppend/value=16384B-14                    	  334912	      5138 ns/op	3198.33 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWritePathBPTreeInsert/count=true-14                        	 2194382	       605.0 ns/op	     309 B/op	       6 allocs/op
+BenchmarkWritePathBPTreeInsert/count=true-14                        	 2065152	       582.4 ns/op	     309 B/op	       6 allocs/op
+BenchmarkWritePathBPTreeInsert/count=true-14                        	 1982737	       608.3 ns/op	     309 B/op	       6 allocs/op
+BenchmarkWritePathBPTreeInsert/count=true-14                        	 1588653	       715.9 ns/op	     309 B/op	       6 allocs/op
+BenchmarkWritePathBPTreeInsert/count=true-14                        	 1960179	       606.6 ns/op	     309 B/op	       6 allocs/op
+BenchmarkWritePathBPTreeInsert/count=false-14                       	 2065156	       638.4 ns/op	     309 B/op	       6 allocs/op
+BenchmarkWritePathBPTreeInsert/count=false-14                       	 2023563	       672.8 ns/op	     309 B/op	       6 allocs/op
+BenchmarkWritePathBPTreeInsert/count=false-14                       	 1985788	       576.5 ns/op	     309 B/op	       6 allocs/op
+BenchmarkWritePathBPTreeInsert/count=false-14                       	 1949530	       609.7 ns/op	     309 B/op	       6 allocs/op
+BenchmarkWritePathBPTreeInsert/count=false-14                       	 1000000	     12603 ns/op	     309 B/op	       6 allocs/op
+PASS
+ok  	bitcask	563.551s

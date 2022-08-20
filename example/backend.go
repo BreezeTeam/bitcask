@@ -1,6 +1,6 @@
 package example
 
-import "bitcask"
+import "github.com/BreezeTeam/bitcask/engine"
 
 type Object struct {
 	Bucket string
